@@ -198,16 +198,16 @@ do
     	echo "Updating as integrity is ok & checksum change ($CHKSUM_PREV) to ($CHKSUM_NOW) on file ($FILE.txt)..."
 		## table name are lowercase
    		tablename=`echo $FILE | tr "[[:upper:]]" "[[:lower:]]"`
-        ## checking if working with activepropertylist to make a backup of it before changes
-        if [ $tablename = "activepropertylist" ]; then
-			echo "Running a backup of ActivePropertyList..."
+        ## checking if working with activepropertybusinessmodel to make a backup of it before changes
+        if [ $tablename = "activepropertybusinessmodel" ]; then
+			echo "Running a backup of ActivePropertyBusinessModel..."
 			### Run stored procedures as required for extra functionality       ###
 			### you can use this section for your own stuff                     ###
 			CMDSP_MYSQL="${MYSQL_DIR}mysql  --default-character-set=utf8 --protocol=${MYSQL_PROTOCOL} --port=${MYSQL_PORT} --user=${MYSQL_USER} --password=${MYSQL_PASS} --host=${MYSQL_HOST} --database=eanprod"
 			# for version 5.6.6+ you will need this line instead to use stored credentials
 			#CMDSP_MYSQL="${MYSQL_DIR}mysql --login-path=${MYSQL_LOGINPATH} --default-character-set=utf8 --protocol=${MYSQL_PROTOCOL} --port=${MYSQL_PORT} --database=eanprod"
 			$CMDSP_MYSQL --execute="CALL eanprod.sp_log_createcopy();"
-			echo "ActivePropertyList backup done."
+			echo "ActivePropertyBusinessModel backup done."
         fi
 		### Update MySQL Data ###
    		echo "Uploading ($FILE.txt) to ($MYSQL_DB.$tablename) with REPLACE option..."
@@ -218,9 +218,9 @@ do
    		## we need to erase the records, NOT updated today
    		echo "erasing old records from ($tablename)..."
    		$CMD_MYSQL --execute="DELETE FROM $tablename WHERE datediff(TimeStamp, now()) < 0;"
-        ## checking if working with activepropertylist to fill the changed log table
-        if [ $tablename = "activepropertylist" ]; then
-			echo "Creating log of changes for ActivePropertyList..."
+        ## checking if working with activepropertybusinessmodel to fill the changed log table
+        if [ $tablename = "activepropertybusinessmodel" ]; then
+			echo "Creating log of changes for ActivePropertyBusinessModel..."
 			### Run stored procedures as required for extra functionality       ###
 			### you can use this section for your own stuff                     ###
 			CMDSP_MYSQL="${MYSQL_DIR}mysql  --default-character-set=utf8 --protocol=${MYSQL_PROTOCOL} --port=${MYSQL_PORT} --user=${MYSQL_USER} --password=${MYSQL_PASS} --host=${MYSQL_HOST} --database=eanprod"
@@ -233,7 +233,7 @@ do
 			$CMDSP_MYSQL --execute="CALL eanprod.sp_log_changedrecords();"
 			### erase records before retention period
 			$CMDSP_MYSQL --execute="DELETE FROM log_activeproperty_changes WHERE TimeStamp < DATE_SUB(NOW(), INTERVAL $LOG_DAYS DAY);"
-			echo "Log for ActivePropertyList done."
+			echo "Log for ActivePropertyBusinessModel done."
         fi
     fi
 done

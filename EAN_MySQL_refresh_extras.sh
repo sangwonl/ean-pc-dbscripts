@@ -129,7 +129,7 @@ $CMD_MYSQL --execute="DELETE FROM $tablename WHERE datediff(TimeStamp, now()) < 
 echo -e "\n"
 tablename="destinationids"
 echo "Downloading and unzipping (Destination IDs)..."
-wget  -t 30 --no-verbose -r -N -nd http://www.ian.com/affiliatecenter/include/Destination_Detail.zip
+wget  -t 30 --no-verbose -r -N -nd http://www.ian.com/affiliatecenter/include/v2/Destination_Detail.zip
 unzip -L -o Destination_Detail.zip
 ### the files are named with the dates, so let's rename it
 mv -f destination_detail*.txt destinationids.txt

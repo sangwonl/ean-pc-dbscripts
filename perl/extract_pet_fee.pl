@@ -52,7 +52,7 @@ while(my $RowPetFee = $PetFee->fetchrow_hashref()) {
       # process the text in $token->[1]
         $lineoftext = $token->[1];
 #      	if (index($lineoftext, "Pet fee:") != -1) {
-		# regex to match Pet fee: ONLY at the begging of line & upper or lowercase
+		# regex to match Pet fee: ONLY at the start of line & upper or lowercase
       	if ($lineoftext =~ /\A(?i)Pet fee:/) {
       	   printf "$EANHotelID|Fee|";
       	   # erase the "Pet Fee: " part

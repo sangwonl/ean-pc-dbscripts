@@ -1,5 +1,5 @@
 ########################################################
-## MySQL_extend_eanprod_es_es.sql                v2.6 ##
+## MySQL_extend_eanprod_es_es.sql                v2.7 ##
 ## (International) Japanese data tables               ##
 ## This is a suplemental script that you can use to   ##
 ## extend the database eanprod and add languages.     ##
@@ -7,7 +7,7 @@
 ## table names are lowercase so it will work for all  ## 
 ## MySQL platforms the same.                          ##
 ########################################################
-
+## 2.7 - Created the ActivePropertyBusinessModel_xx_XX
 USE eanprod;
 
 ########################################################
@@ -21,20 +21,36 @@ USE eanprod;
 ## th_TH,zh_TW                                        ##
 ########################################################
 
-## ActivePropertyList - structure is different for US version
+## ActivePropertyList - structure is different for en_US version
 DROP TABLE IF EXISTS activepropertylist_es_es;
 CREATE TABLE activepropertylist_es_es
 (
 	EANHotelID INT NOT NULL,
 	LanguageCode VARCHAR(5),
 	Name VARCHAR(70),
-  Location VARCHAR(80),
-  CheckInTime VARCHAR(10),
+    Location VARCHAR(80),
+    CheckInTime VARCHAR(10),
 	CheckOutTime VARCHAR(10),
+    BusinessModelMask INT,
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (EANHotelID)
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
+### table to identify pre/post pay (ONLY for authorized partners)
+### Different structure than the en_US version
+### Business Model Flag - Expedia Collect (1), Hotel Collect (2) and ETP (3) inventory.
+DROP TABLE IF EXISTS activepropertybusinessmodel_es_es;
+CREATE TABLE activepropertybusinessmodel_es_es
+(
+	EANHotelID INT NOT NULL,
+	LanguageCode VARCHAR(5),
+	Name VARCHAR(70),
+    Location VARCHAR(80),
+    CheckInTime VARCHAR(10),
+	CheckOutTime VARCHAR(10),
+    TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	PRIMARY KEY (EANHotelID)
+) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
 ## table to correct search term for a region
 ## notice there are NO spaces between words
@@ -45,7 +61,7 @@ CREATE TABLE aliasregionlist_es_es
 	RegionID INT NOT NULL,
 	LanguageCode VARCHAR(5),
 	AliasString VARCHAR(255),
-  TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ##	PRIMARY KEY (RegionID, AliasString)
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 CREATE INDEX idx_aliasregionlist_es_es_regionid ON aliasregionlist_es_es(RegionID);
