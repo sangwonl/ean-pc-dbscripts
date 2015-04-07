@@ -36,21 +36,6 @@ CREATE TABLE activepropertylist_es_es
 	PRIMARY KEY (EANHotelID)
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
-### table to identify pre/post pay (ONLY for authorized partners)
-### Different structure than the en_US version
-### Business Model Flag - Expedia Collect (1), Hotel Collect (2) and ETP (3) inventory.
-DROP TABLE IF EXISTS activepropertybusinessmodel_es_es;
-CREATE TABLE activepropertybusinessmodel_es_es
-(
-	EANHotelID INT NOT NULL,
-	LanguageCode VARCHAR(5),
-	Name VARCHAR(70),
-    Location VARCHAR(80),
-    CheckInTime VARCHAR(10),
-	CheckOutTime VARCHAR(10),
-    TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	PRIMARY KEY (EANHotelID)
-) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
 ## table to correct search term for a region
 ## notice there are NO spaces between words
@@ -324,6 +309,7 @@ CREATE TABLE propertyrenovationslist_es_es
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
 ## Business Models for pre-pay & post-pay properties
+### Business Model Flag - Expedia Collect (1), Hotel Collect (2) and ETP (3) inventory.
 DROP TABLE IF EXISTS activepropertybusinessmodel_es_es
 CREATE TABLE activepropertybusinessmodel_es_es 
 (
