@@ -271,11 +271,11 @@ DROP TABLE IF EXISTS destinationids;
 CREATE TABLE destinationids
 (
 Destination 	varchar(280),
-DestinationID 	varchar(50) NOT NULL,
-CenterLongitude numeric(12,8),
-CenterLatitude 	numeric(12,8),
-StateProvince 	varchar(2),
-Country 	    varchar(3),
+DestinationID 	varchar(100) NOT NULL,
+CenterLongitude DECIMAL(14,8),
+CenterLatitude 	DECIMAL(14,8),
+StateProvince 	varchar(280),
+Country 	    varchar(280),
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (DestinationID)
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
@@ -284,13 +284,13 @@ CREATE INDEX idx_dest_name ON destinationids(Destination);
 DROP TABLE IF EXISTS landmark;
 CREATE TABLE landmark
 (
-DestinationID 	varchar(50) NOT NULL,
+DestinationID 	varchar(100) NOT NULL,
 Name			varchar(280),
 City			varchar(4000),
 StateProvince 	varchar(2),
 Country			varchar(3),
-CenterLatitude 	numeric(12,8),
-CenterLongitude numeric(12,8),
+CenterLatitude 	DECIMAL(14,8),
+CenterLongitude DECIMAL(14,8),
 Type 	    	int,
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (DestinationID)
@@ -303,7 +303,7 @@ CREATE INDEX idx_landmk_name ON landmark(Name);
 DROP TABLE IF EXISTS regionidtodestinationid;
 CREATE TABLE regionidtodestinationid
 (
-DestinationID 	varchar(50) NOT NULL,
+DestinationID 	varchar(100) NOT NULL,
 DestinationINT 	int,
 Destination 	varchar(280),
 DestinationType int,
@@ -315,6 +315,21 @@ RegionType      varchar(255),
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 CREATE INDEX idx_dest_namemap ON regionidtodestinationid(RegionID);
 
+DROP TABLE IF EXISTS destinationid_comparable;
+CREATE TABLE destinationid_comparable (
+  DestinationID 	varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  DestinationName 	varchar(280) COLLATE utf8_unicode_ci DEFAULT NULL,
+  DestinationCNT 	int(11) DEFAULT NULL,
+  MatchPercent 		decimal(12,8) DEFAULT NULL,
+  RegionCNT 		int(11) DEFAULT NULL,
+  RegionID 			int(11) NOT NULL,
+  RegionNameLong 	varchar(510) COLLATE utf8_unicode_ci DEFAULT NULL,
+  RegionType 		varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  RegionSubClass 	varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  TimeStamp			timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+CREATE INDEX idx_dest_comp_regid ON destinationid_comparable(RegionID);
+CREATE INDEX idx_dest_comp_destid ON destinationid_comparable(DestinationID);
 
 #################################################
 # Reverse Engineering to obtain the amount of
@@ -328,44 +343,9 @@ CREATE TABLE destinationid_list (
   DestinationHotelList TEXT,
   TimeStamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (DestinationID)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
-## New ActivePropertyList with BusinessModelMask
-## 1-pre pay (merchant)
-## 2 = post pay (agency)
-## 3 = pre and post pay hotels (flex/ETP)
-DROP TABLE IF EXISTS activepropertybusinessmodel;
-CREATE TABLE activepropertybusinessmodel
-(
-	EANHotelID INT NOT NULL,
-	SequenceNumber INT,
-	Name VARCHAR(70),
-	Address1 VARCHAR(50),
-	Address2 VARCHAR(50),
-	City VARCHAR(50),
-	StateProvince VARCHAR(2),
-	PostalCode VARCHAR(15),
-	Country VARCHAR(2),
-	Latitude numeric(8,5),
-	Longitude numeric(8,5),
-	AirportCode VARCHAR(3),
-	PropertyCategory INT,
-	PropertyCurrency VARCHAR(3),
-	StarRating numeric(2,1),
-	Confidence INT,
-	SupplierType VARCHAR(3),
-	Location VARCHAR(80),
-	ChainCodeID VARCHAR(5),
-	RegionID INT,
-	HighRate numeric(19,4),
-	LowRate numeric(19,4),
-	CheckInTime VARCHAR(10),
-	CheckOutTime VARCHAR(10),
-	BusinessModelMask INT,
-  TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	PRIMARY KEY (EANHotelID)
-) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
 
 ## file based in the file: Property ID Cross Reference

@@ -1112,11 +1112,11 @@ CREATE FUNCTION HOTELS_IN_REGION(input INT)
     RETURNS TEXT
 BEGIN
     SET SESSION group_concat_max_len = 1000000;
-    SELECT GROUP_CONCAT(regioneanhotelidmapping.EANHotelID)
-    FROM   eanprod.regioneanhotelidmapping
-    LEFT JOIN eanprod.activepropertybusinessmodel
-    ON regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID 
-    WHERE regioneanhotelidmapping.RegionID = input ORDER BY SequenceNumber INTO @MyRetList;
+    SELECT GROUP_CONCAT(eanprod.activepropertybusinessmodel.EANHotelID ORDER BY eanprod.activepropertybusinessmodel.SequenceNumber)
+    FROM eanprod.regioneanhotelidmapping
+    JOIN eanprod.activepropertybusinessmodel
+    ON eanprod.regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID 
+    WHERE eanprod.regioneanhotelidmapping.RegionID = input ORDER BY eanprod.activepropertybusinessmodel.SequenceNumber INTO @MyRetList;
     RETURN @MyRetList;
 END;
 $$
@@ -1126,7 +1126,7 @@ DELIMITER ;
 ## HOTELS_IN_REGION_COUNT - Return the amt of hotels in a RegionID
 ## for any given EANRegionID INT value
 ## EXAMPLE
-## usage: HOTELS_IN_REGION_COUNT(2084) -> 125
+## usage: HOTELS_IN_REGION_COUNT(3179) -> 71
 ##
 DROP FUNCTION IF EXISTS HOTELS_IN_REGION_COUNT;
 DELIMITER $$
@@ -1134,9 +1134,11 @@ DELIMITER $$
 CREATE FUNCTION HOTELS_IN_REGION_COUNT(input INT)
     RETURNS INT
 BEGIN
-    SELECT COUNT(EANHotelID)
+    SELECT COUNT(eanprod.activepropertybusinessmodel.EANHotelID)
     FROM   eanprod.regioneanhotelidmapping
-    WHERE  RegionID = input INTO @MyRetCnt;
+    JOIN eanprod.activepropertybusinessmodel
+    ON eanprod.regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID
+    WHERE  eanprod.regioneanhotelidmapping.RegionID = input INTO @MyRetCnt;
     RETURN @MyRetCnt;
 END;
 $$
@@ -1156,11 +1158,11 @@ CREATE FUNCTION HOTELS_IN_REGION_LIST(input_array TEXT)
     RETURNS TEXT
 BEGIN
     SET SESSION group_concat_max_len = 1000000;
-    SELECT GROUP_CONCAT(DISTINCT regioneanhotelidmapping.EANHotelID)
+    SELECT GROUP_CONCAT(DISTINCT eanprod.regioneanhotelidmapping.EANHotelID ORDER BY eanprod.activepropertybusinessmodel.SequenceNumber)
     FROM   eanprod.regioneanhotelidmapping
-    LEFT JOIN eanprod.activepropertybusinessmodel
-    ON regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID 
-    WHERE FIND_IN_SET(regioneanhotelidmapping.RegionID,input_array) ORDER BY SequenceNumber INTO @MyRetList;
+    JOIN eanprod.activepropertybusinessmodel
+    ON eanprod.regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID 
+    WHERE FIND_IN_SET(eanprod.regioneanhotelidmapping.RegionID,input_array) ORDER BY eanprod.activepropertybusinessmodel.SequenceNumber INTO @MyRetList;
     RETURN @MyRetList;
 END$$
 DELIMITER ;
@@ -1177,9 +1179,11 @@ DELIMITER $$
 CREATE FUNCTION HOTELS_IN_REGION_LIST_COUNT(input_array TEXT)
     RETURNS INT
 BEGIN
-    SELECT COUNT(DISTINCT EANHotelID)
+    SELECT COUNT(DISTINCT eanprod.activepropertybusinessmodel.EANHotelID)
     FROM   eanprod.regioneanhotelidmapping
-    WHERE  FIND_IN_SET(RegionID,input_array) INTO @MyRetCnt;
+    JOIN eanprod.activepropertybusinessmodel
+    ON eanprod.regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID
+    WHERE  FIND_IN_SET(eanprod.regioneanhotelidmapping.RegionID,input_array) INTO @MyRetCnt;
     RETURN @MyRetCnt;
 END$$
 DELIMITER ;
@@ -1198,9 +1202,11 @@ CREATE FUNCTION REGIONS_FOR_HOTEL(input INT)
     RETURNS TEXT
 BEGIN
     SET SESSION group_concat_max_len = 1000000;
-    SELECT GROUP_CONCAT(RegionID)
+    SELECT GROUP_CONCAT(eanprod.regioneanhotelidmapping.RegionID)
     FROM   eanprod.regioneanhotelidmapping
-    WHERE  EANHotelID = input INTO @MyRetList;
+    JOIN eanprod.activepropertybusinessmodel
+    ON eanprod.regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID
+    WHERE  eanprod.activepropertybusinessmodel.EANHotelID = input INTO @MyRetList;
     RETURN @MyRetList;
 END;
 $$
@@ -1218,9 +1224,11 @@ DELIMITER $$
 CREATE FUNCTION REGIONS_FOR_HOTEL_COUNT(input INT)
     RETURNS INT
 BEGIN
-    SELECT COUNT(RegionID)
+    SELECT COUNT(eanprod.regioneanhotelidmapping.RegionID)
     FROM   eanprod.regioneanhotelidmapping
-    WHERE  EANHotelID = input INTO @MyRetCnt;
+    JOIN eanprod.activepropertybusinessmodel
+    ON eanprod.regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID
+    WHERE  eanprod.activepropertybusinessmodel.EANHotelID = input INTO @MyRetCnt;
     RETURN @MyRetCnt;
 END;
 $$
@@ -1344,3 +1352,18 @@ BEGIN
 END
 $$
 DELIMITER ;
+
+#############################################################################
+# FUNCTION to return the text inside parenthesis
+# used to extract Airport Codes from ParentRegionList
+#
+DROP FUNCTION IF EXISTS TEXT_INSIDE_PARENTNESIS;
+DELIMITER $$
+CREATE FUNCTION TEXT_INSIDE_PARENTNESIS(input VARCHAR(510))
+   RETURNS VARCHAR(255)
+BEGIN
+   RETURN SUBSTR(input, LOCATE('(',input)+1,(CHAR_LENGTH(input) - LOCATE(')',REVERSE(input)) - LOCATE('(',input)));
+END
+$$
+DELIMITER ;
+

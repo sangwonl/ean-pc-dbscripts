@@ -46,7 +46,6 @@ LOG_DAYS=30
 # the list should match the tables ##
 # created by create_ean.sql script ##
 #####################################
-#LANG=es_ES
 FILES=(
 ActivePropertyList
 AirportCoordinatesList
@@ -83,7 +82,7 @@ PropertyFeesList
 PropertyMandatoryFeesList
 PropertyRenovationsList
 ### Special File for Authorized Partners ONLY
-#ActivePropertyBusinessModel
+ActivePropertyBusinessModel
 ## <BusinessModelMask> 	<Availability Offered>
 ## 1 	Expedia Collect only
 ## 2 	Hotel Collect only
@@ -175,14 +174,6 @@ do
     ## special fix for DiningDescriptionLIst naming error
     if [ $FILE = "DiningDescriptionList" ] && [ -f "DiningDescriptionLIst.txt" ]; then
        mv -f DiningDescriptionLIst.txt diningdescriptionlist.txt
-    fi
-    # Temporary FIX for "|" inside data
-    if [ $FILE = "ActivePropertyList" ] && [ -f "ActivePropertyList.txt" ]; then
-       sed -i "s/Off Langata | Karen Road/Off Langata - Karen Road/" ActivePropertyList.txt
-    fi
-    # Temporary FIX for "|" inside data
-    if [ $FILE = "ActivePropertyBusinessModel" ] && [ -f "ActivePropertyBusinessModel.txt" ]; then
-       sed -i "s/\"Off Langata | Karen Road\"/Off Langata - Karen Road/" ActivePropertyBusinessModel.txt
     fi
    	## some integrity tests to avoid processing 'bad' files
    	if [ -n "${CHKSUM_CMD}" ] ; then
