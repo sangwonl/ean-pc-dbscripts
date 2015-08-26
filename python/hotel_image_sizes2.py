@@ -146,4 +146,4 @@ with con:
             #    sys.stdout.write("\n")
         # end-for sizes to test
     #end-for SQL rows
-# EOF: hotel_images_sizes.py
+# EOF: hotel_images_sizes2.py

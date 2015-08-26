@@ -541,6 +541,20 @@ ORDER BY distance ASC;
 END 
 $$
 DELIMITER ;
+
+##################################################################
+## Calculate distance between two GPS locations
+## USAGE: DISTANCE_BETWEEN_GPS(-34.017330, 22.809500, latitude, longitude)
+##
+DROP FUNCTION IF EXISTS DISTANCE_BETWEEN_GPS;
+DELIMITER $$
+CREATE FUNCTION DISTANCE_BETWEEN_GPS(geo1_latitude decimal(10,6), geo1_longitude decimal(10,6), geo2_latitude decimal(10,6), geo2_longitude decimal(10,6))
+returns decimal(10,3) DETERMINISTIC
+BEGIN
+  return ((ACOS(SIN(geo1_latitude * PI() / 180) * SIN(geo2_latitude * PI() / 180) + COS(geo1_latitude * PI() / 180) * COS(geo2_latitude * PI() / 180) * COS((geo1_longitude - geo2_longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515);
+END $$
+DELIMITER ;
+
 ##################################################################
 ##this version will allow you to restrict the results:
 ##stay in an Specific Country
