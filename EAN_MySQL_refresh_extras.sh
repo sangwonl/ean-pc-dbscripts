@@ -128,13 +128,14 @@ $CMD_MYSQL --execute="DELETE FROM $tablename WHERE datediff(TimeStamp, now()) < 
 
 echo -e "\n"
 tablename="destinationids"
-echo "Downloading and unzipping (Destination IDs)..."
-wget  -t 30 --no-verbose -r -N -nd http://www.ian.com/affiliatecenter/include/v2/Destination_Detail.zip
-unzip -L -o Destination_Detail.zip
+echo "Downloading hand-fixed version of (Destination IDs)..."
+#wget  -t 30 --no-verbose -r -N -nd http://www.ian.com/affiliatecenter/include/V2/Destination_Detail.zip
+wget  -t 30 --no-verbose -r -N -nd http://sandbox.ean.so/publicfiles/Destination_Detail.txt
+#unzip -L -o Destination_Detail.zip
 ### the files are named with the dates, so let's rename it
-mv -f destination_detail*.txt destinationids.txt
+#mv -f destination_detail*.txt destinationids.txt
 echo "Uploading ($tablename.txt) to ($MYSQL_DB.$tablename) with REPLACE option..."
-$CMD_MYSQL --execute="LOAD DATA LOCAL INFILE '$tablename.txt' REPLACE INTO TABLE $tablename CHARACTER SET utf8 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES;"
+$CMD_MYSQL --execute="LOAD DATA LOCAL INFILE 'Destination_Detail.txt' REPLACE INTO TABLE $tablename CHARACTER SET utf8 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES;"
 ## we need to erase the records, NOT updated today
 echo "erasing old records from ($tablename)..."
 $CMD_MYSQL --execute="DELETE FROM $tablename WHERE datediff(TimeStamp, now()) < 0;"
