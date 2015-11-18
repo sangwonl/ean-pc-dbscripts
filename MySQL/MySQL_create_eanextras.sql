@@ -331,11 +331,11 @@ CREATE TABLE destinationid_comparable (
 CREATE INDEX idx_dest_comp_regid ON destinationid_comparable(RegionID);
 CREATE INDEX idx_dest_comp_destid ON destinationid_comparable(DestinationID);
 
-#################################################
-# Reverse Engineering to obtain the amount of
-# properties on each DestinationID
-# loaded using Destinations & Landmarks
-#################################################
+/************************************************
+* Reverse Engineering to obtain the amount of
+* properties on each DestinationID
+* loaded using Destinations & Landmarks
+************************************************/
 DROP TABLE IF EXISTS destinationid_list;
 CREATE TABLE destinationid_list (
   DestinationID varchar(50) COLLATE utf8_unicode_ci NOT NULL,
@@ -345,7 +345,7 @@ CREATE TABLE destinationid_list (
   PRIMARY KEY (DestinationID)
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-
+-- LOAD DATA LOCAL INFILE '/home/eanuser/perl/destinationid_result.txt' INTO TABLE destinationid_list FIELDS TERMINATED BY '|' IGNORE 1 LINES;
 
 
 ## file based in the file: Property ID Cross Reference

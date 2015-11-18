@@ -31,7 +31,6 @@ CREATE TABLE activepropertylist_es_es
     Location VARCHAR(80),
     CheckInTime VARCHAR(10),
 	CheckOutTime VARCHAR(10),
-    BusinessModelMask INT,
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (EANHotelID)
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
@@ -310,7 +309,7 @@ CREATE TABLE propertyrenovationslist_es_es
 
 ## Business Models for pre-pay & post-pay properties
 ### Business Model Flag - Expedia Collect (1), Hotel Collect (2) and ETP (3) inventory.
-DROP TABLE IF EXISTS activepropertybusinessmodel_es_es
+DROP TABLE IF EXISTS activepropertybusinessmodel_es_es;
 CREATE TABLE activepropertybusinessmodel_es_es 
 (
   EANHotelID INT NOT NULL,

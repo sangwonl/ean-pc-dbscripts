@@ -1,5 +1,5 @@
 ########################################################
-## MySQL_create_eanprod.sql                      v4.7 ##
+## MySQL_create_eanprod.sql                      v4.8 ##
 ## SCRIPT TO GENERATE EAN DATABASE IN MYSQL ENGINE    ##
 ## BE CAREFUL AS IT WILL ERASE THE EXISTING DATABASE  ##
 ## YOU CAN USE SECTIONS OF IT TO RE-CREATE TABLES     ##
@@ -1039,22 +1039,30 @@ DELIMITER ;
 ## STRING_SPLIT & EXTRACT_ADDRESS_PART
 ## Extract the "City" or "StateProvice" or "Country" from
 ## a "City, StateProvince, Country" or "City, Country" structure
+## expanded to support: 
+## "Something, Whatever, City, StateProvince, Country" structures or longer
 ##
 DROP FUNCTION IF EXISTS STRING_SPLIT;
-CREATE FUNCTION STRING_SPLIT(x varchar(65535), delim varchar(12), pos int) returns varchar(65535)
+CREATE FUNCTION STRING_SPLIT(x varchar(21845), delim varchar(12), pos int) returns varchar(21845)
 RETURN TRIM(replace(substring(substring_index(x, delim, pos), length(substring_index(x, delim, pos - 1)) + 1), delim, ''));
+
+DROP FUNCTION IF EXISTS COMMAS_COUNT;
+CREATE FUNCTION COMMAS_COUNT(CommaDelimColumn VARCHAR(21845)) returns int
+RETURN LENGTH(TRIM(BOTH ',' FROM CommaDelimColumn)) - LENGTH(REPLACE(TRIM(BOTH ',' FROM CommaDelimColumn), ',', ''));
 
 DROP FUNCTION IF EXISTS EXTRACT_ADDRESS_PART;
 DELIMITER $$
-CREATE FUNCTION EXTRACT_ADDRESS_PART( source VARCHAR(65535), part VARCHAR(65535) )
-RETURNS VARCHAR(65535)
+CREATE FUNCTION EXTRACT_ADDRESS_PART( source VARCHAR(21845), part VARCHAR(21845) )
+RETURNS VARCHAR(21845)
 DETERMINISTIC
 BEGIN
-DECLARE part_out VARCHAR(65535);  
-    IF BINARY STRING_SPLIT(source,',',3) != BINARY '' THEN  
-       IF part = 'City'          THEN SET part_out = STRING_SPLIT(source,',',1); END IF;
-       IF part = 'StateProvince' THEN SET part_out = STRING_SPLIT(source,',',2); END IF;
-       IF part = 'Country'       THEN SET part_out = STRING_SPLIT(source,',',3); END IF;
+DECLARE vcommas INT;
+DECLARE part_out VARCHAR(21845);
+SET vcommas = COMMAS_COUNT(source);
+    IF vcommas > 1 THEN
+       IF part = 'City'          THEN SET part_out = STRING_SPLIT(source,',',(vcommas-1)); END IF;
+       IF part = 'StateProvince' THEN SET part_out = STRING_SPLIT(source,',',vcommas);     END IF;
+       IF part = 'Country'       THEN SET part_out = STRING_SPLIT(source,',',(vcommas+1)); END IF;
     ELSE  
        IF part = 'City'          THEN SET part_out = STRING_SPLIT(source,',',1); END IF;
        IF part = 'StateProvince' THEN SET part_out = NULL;                       END IF;
@@ -1110,7 +1118,7 @@ END;
 $$
 DELIMITER ;
 
-#####################################################################
+/*###################################################################
 ## HOTELS_IN_REGION - Return comma delimited list of hotel ids
 ## for any given EANRegionID INT value
 # changed the maximum for group_concat len to include all list
@@ -1119,6 +1127,7 @@ DELIMITER ;
 ## 179898 - Paris (Vicinity)
 ## 12/10/2014 UPDATED: to use ActivePropertyBusinessModel (Pre/Post pay properties table)
 ## 02/04/2015 UPDATED: to use the SequenceNumber for Sorting
+*/
 DROP FUNCTION IF EXISTS HOTELS_IN_REGION;
 DELIMITER $$
 
@@ -1136,12 +1145,12 @@ END;
 $$
 DELIMITER ;
 
-#####################################################################
+/*###################################################################
 ## HOTELS_IN_REGION_COUNT - Return the amt of hotels in a RegionID
 ## for any given EANRegionID INT value
 ## EXAMPLE
 ## usage: HOTELS_IN_REGION_COUNT(3179) -> 71
-##
+*/
 DROP FUNCTION IF EXISTS HOTELS_IN_REGION_COUNT;
 DELIMITER $$
 
@@ -1367,10 +1376,10 @@ END
 $$
 DELIMITER ;
 
-#############################################################################
-# FUNCTION to return the text inside parenthesis
-# used to extract Airport Codes from ParentRegionList
-#
+/*********************************************************
+** FUNCTION to return the text inside parenthesis       **
+** used to extract Airport Codes from ParentRegionList  **
+*********************************************************/
 DROP FUNCTION IF EXISTS TEXT_INSIDE_PARENTNESIS;
 DELIMITER $$
 CREATE FUNCTION TEXT_INSIDE_PARENTNESIS(input VARCHAR(510))
@@ -1381,3 +1390,4 @@ END
 $$
 DELIMITER ;
 
+-- EOF (MySQL_create_eanprod.sql) --
