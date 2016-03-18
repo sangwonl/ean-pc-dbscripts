@@ -1,7 +1,7 @@
 use eanprod;
-SELECT RegionID, REGION_NAME_CLEAN(RegionNameLong) AS 'Destination_en_us',
-       REGION_NAME_CLEAN(regionlist_es_es.RegionNameLong) AS 'Destination_es_es',RegionNameLong, RegionType,
-	   HOTELS_IN_REGION_COUNT(RegionID) AS 'AmtOfHotels'
+SELECT parentregionlist.RegionID, REGION_NAME_CLEAN(parentregionlist.RegionNameLong) AS 'Destination_en_us',
+       REGION_NAME_CLEAN(regionlist_es_es.RegionNameLong) AS 'Destination_es_es',parentregionlist.RegionNameLong,
+       RegionType, HOTELS_IN_REGION_COUNT(parentregionlist.RegionID) AS 'AmtOfHotels'
 FROM parentregionlist
 
 LEFT JOIN regionlist_es_es ON

@@ -106,6 +106,9 @@ CREATE TABLE pointsofinterestcoordinateslist
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (RegionNameLong)
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+-- ENGINE=MyISAM;
+-- http://dev.mysql.com/doc/refman/5.5/en/creating-spatial-indexes.html
+
 
 ## index by RegionID to use as relational key
 CREATE INDEX idx_pointsofinterestcoordinateslist_regionid ON pointsofinterestcoordinateslist(RegionID);
@@ -127,8 +130,8 @@ CREATE TABLE countrylist
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
 ## add indexes by country code & country name
-CREATE INDEX idx_countrylist_countrycode ON countrylist(CountryCode);
-CREATE INDEX idx_countrylist_countryname ON countrylist(CountryName);
+CREATE UNIQUE INDEX idx_countrylist_countrycode ON countrylist(CountryCode);
+CREATE UNIQUE INDEX idx_countrylist_countryname ON countrylist(CountryName);
 
 
 DROP TABLE IF EXISTS propertytypelist;
@@ -1050,6 +1053,11 @@ DROP FUNCTION IF EXISTS COMMAS_COUNT;
 CREATE FUNCTION COMMAS_COUNT(CommaDelimColumn VARCHAR(21845)) returns int
 RETURN LENGTH(TRIM(BOTH ',' FROM CommaDelimColumn)) - LENGTH(REPLACE(TRIM(BOTH ',' FROM CommaDelimColumn), ',', ''));
 
+-- include all available to the LEFT
+DROP FUNCTION IF EXISTS LSTRING_SPLIT;
+CREATE FUNCTION LSTRING_SPLIT(x varchar(21845), delim varchar(12), pos int) returns varchar(21845)
+RETURN TRIM(replace(substring(substring_index(x, delim, pos), length(substring_index(x, delim, pos - 1)) + 1), delim, ''));
+
 DROP FUNCTION IF EXISTS EXTRACT_ADDRESS_PART;
 DELIMITER $$
 CREATE FUNCTION EXTRACT_ADDRESS_PART( source VARCHAR(21845), part VARCHAR(21845) )
@@ -1058,8 +1066,10 @@ DETERMINISTIC
 BEGIN
 DECLARE vcommas INT;
 DECLARE part_out VARCHAR(21845);
+SET source = REPLACE(source, 'Mexico, Estado de', 'Estado de Mexico');
 SET vcommas = COMMAS_COUNT(source);
     IF vcommas > 1 THEN
+       IF part = 'LeftCity'      THEN SET part_out = LSTRING_SPLIT(source,',',(vcommas-1)); END IF;    
        IF part = 'City'          THEN SET part_out = STRING_SPLIT(source,',',(vcommas-1)); END IF;
        IF part = 'StateProvince' THEN SET part_out = STRING_SPLIT(source,',',vcommas);     END IF;
        IF part = 'Country'       THEN SET part_out = STRING_SPLIT(source,',',(vcommas+1)); END IF;

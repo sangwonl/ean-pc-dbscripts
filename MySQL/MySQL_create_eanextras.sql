@@ -49,7 +49,7 @@ CREATE TABLE fasttextsearch
 	SearchBy VARCHAR(510),
 	Type CHAR(1),
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
 CREATE FULLTEXT INDEX ft_name ON fasttextsearch(Name);
 
@@ -347,6 +347,25 @@ CREATE TABLE destinationid_list (
 
 -- LOAD DATA LOCAL INFILE '/home/eanuser/perl/destinationid_result.txt' INTO TABLE destinationid_list FIELDS TERMINATED BY '|' IGNORE 1 LINES;
 
+-- table with the last production mapping of DestinationID -> RegionID
+-- this was the same data in production of the API
+DROP TABLE IF EXISTS destinationidregionid;
+CREATE TABLE destinationidregionid
+(
+    DestinationID VARCHAR(100) NOT NULL,
+	RegionID INT NOT NULL,
+	Name VARCHAR(500),
+	RegionSemanticDesc VARCHAR(255),
+    TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	PRIMARY KEY (RegionID)
+) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+-- index by DestinationID for fast join
+CREATE INDEX destid_regid ON destinationidregionid(DestinationID);
+
+-- LOAD DATA LOCAL INFILE '/Users/jarce/DestinationIDRegionID.csv' INTO TABLE destinationidregionid CHARACTER SET utf8
+-- FIELDS TERMINATED BY ',' 
+-- OPTIONALLY ENCLOSED BY '"'
+-- LINES TERMINATED BY '\n' IGNORE 1 LINES;
 
 ## file based in the file: Property ID Cross Reference
 DROP TABLE IF EXISTS propertyidcrossreference;
@@ -387,8 +406,6 @@ CREATE TABLE propertysuppliermapping
 CREATE INDEX idx_eanpropertyid ON propertysuppliermapping(EANPropertyID);
 CREATE INDEX idx_supplierpropertyid ON propertysuppliermapping(SupplierPropertyID);
 
-# table to store the allCountries.txt file from http://download.geonames.org/export/dump/
-# will be best to run once with allCountries, then just apply the daily updates
 DROP TABLE IF EXISTS geonames;
 CREATE TABLE geonames
 (
@@ -420,36 +437,29 @@ CREATE INDEX geonames_geoloc ON geonames(Latitude, Longitude,FeatureCode);
 ## index to speed the usual search by name,country filtered by FeatureClass and code
 CREATE INDEX geonames_fastasciiname ON geonames(AsciiName, CountryCode, FeatureClass, FeatureCode);
 
-DROP TABLE IF EXISTS geonames;
-CREATE TABLE geonames
-(
-GeoNameID INT NOT NULL,
-Name VARCHAR(200),
-AsciiName VARCHAR(200),
-AlternateNames TEXT,
-Latitude numeric(9,6),
-Longitude numeric(9,6),
-FeatureClass char(1),
-FeatureCode varchar(10),
-CountryCode  char(2),
-AlternativeCountryCode varchar(60),
-AdminCode1 varchar(20),
-AdminCode2 varchar(80), 
-AdminCode3 varchar(20),
-AdminCode4 varchar(20),
-Population BIGINT,
-Elevation INT,
-Dem INT,
-Timezone varchar(40),
-ModificationDate date,
-TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	PRIMARY KEY (GeoNameID)
-) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
-## index by Latitude, Longitude to use for geosearches
-## we add the FeatureCode to the index to spped up filtered searches
-CREATE INDEX geonames_geoloc ON geonames(Latitude, Longitude,FeatureCode);
-## index to speed the usual search by name,country filtered by FeatureClass and code
-CREATE INDEX geonames_fastasciiname ON geonames(AsciiName, CountryCode, FeatureClass, FeatureCode);
+##################################################################
+## Fix the DestinationID names so they are similar to RegionID names
+## should be excecuted after running a DestinationIDs, Landmark 
+## & DestinationIDRegionID refresh process
+## call fix_destinationid_names();
+##################################################################
+DROP PROCEDURE IF EXISTS fix_destinationid_names;
+DELIMITER $$
+CREATE PROCEDURE fix_destinationid_names()
+BEGIN
+-- update the regular destinations
+UPDATE destinationidregionid
+JOIN destinationids ON destinationidregionid.DestinationID = destinationids.DestinationID
+SET destinationidregionid.Name = CONCAT(Destination,', ',IF(StateProvince IS NULL OR StateProvince = '','',CONCAT(StateProvince,', ')),Country)
+;
+-- update the landmark pois
+UPDATE destinationidregionid
+JOIN landmark ON CONCAT('{',destinationidregionid.DestinationID,'}') = landmark.DestinationID
+SET destinationidregionid.Name = CONCAT(landmark.Name,', ',City,', ',IF(StateProvince IS NULL OR StateProvince = '','',CONCAT(StateProvince,', ')),Country)
+;
+END 
+$$
+DELIMITER ;
 
 ##################################################################
 ## search what is close to a GPSPoint using Geonames table content
