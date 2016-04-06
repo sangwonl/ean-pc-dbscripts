@@ -28,9 +28,6 @@ The Partners will need to run:
 
 /perl - Perl scripts that we have created as simple solutions to verify data, reformat data, etc.
 -> extract_pet_fee.pl - Extract the information from the database into a new file that is easier to use.
--> validate_hotel_image_links.pl - Test the hotel images links are valid.
--> validate_room_image_links.pl - Test the hotel rooms images links are valid.
--> train_stations.pl - Use the eanextras database with the geonames table to find train stations close to hotels. Not-working yet.
 
 New Geography correct information:
 Our data lack the proper StateProvince for a lot of countries, we created the script:
@@ -38,9 +35,6 @@ Our data lack the proper StateProvince for a lot of countries, we created the sc
 
 /MAC - Mac adjusted versions of the scripts
  It include my compiled version of the wget utility that is REQUIRED for this scripts to work.
- 
-  
-(extras) anything refering to eanextras are experimental database where I test process and data out. You can find the older V1 structures there as well as currently the geonames & ourairports data and geo-search stored procedures.
 
 ** Use of these scripts are at your own risk. The scripts are provided “as is” without any warranty of any kind and Expedia disclaims any and all liability regarding any use of the scripts. **
 
