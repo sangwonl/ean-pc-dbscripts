@@ -1,11 +1,13 @@
 ########################################################
-## MySQL_create_eanprod.sql                      v4.9 ##
+## MySQL_create_eanprod.sql                      v4.0 ##
 ## SCRIPT TO GENERATE EAN DATABASE IN MYSQL ENGINE    ##
 ## BE CAREFUL AS IT WILL ERASE THE EXISTING DATABASE  ##
 ## YOU CAN USE SECTIONS OF IT TO RE-CREATE TABLES     ##
 ## WILL CREATE USER: eanuser / expedia                ##
 ## table names are lowercase so it will work  in all  ## 
 ## platforms the same.                                ##
+@@ v4.0 -Change RegionID to BIGINT as                 ## 
+## GAIA values are huge in size                       ##
 ########################################################
 ##
 ## YOU NEED TO CONNECT AS ROOT FOR THIS SCRIPT TO WORK PROPERLY
@@ -14,13 +16,6 @@ DROP DATABASE IF EXISTS eanprod;
 ## specify utf8 / ut8_unicode_ci to manage all languages properly
 ## updated from files contain those characters
 CREATE DATABASE eanprod CHARACTER SET utf8 COLLATE utf8_unicode_ci;
-
-## users permisions, you must run as root to get the user this permissions
-##
-GRANT ALL ON eanprod.* TO 'eanuser'@'%' IDENTIFIED BY 'Passw@rd1';
-GRANT ALL ON eanprod.* TO 'eanuser'@'localhost' IDENTIFIED BY 'Passw@rd1';
-GRANT SUPER ON *.* to eanuser@'localhost' IDENTIFIED BY 'Passw@rd1';
-FLUSH PRIVILEGES;
 
 
 ## REQUIRED IN WINDOWS as we do not use STRICT_TRANS_TABLE for the upload process
@@ -44,7 +39,7 @@ CREATE TABLE airportcoordinateslist
 	AirportName VARCHAR(70),
 	Latitude numeric(9,6),
 	Longitude numeric(9,6),
-	MainCityID INT,
+	MainCityID 	BIGINT,
 	CountryCode VARCHAR(2),
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (AirportCode)
@@ -78,8 +73,8 @@ CREATE TABLE activepropertylist
 	Confidence INT,
 	SupplierType VARCHAR(3),
 	Location VARCHAR(80),
-	ChainCodeID INT,
-	RegionID INT,
+	ChainCodeID VARCHAR(5),
+	RegionID BIGINT,
 	HighRate numeric(19,4),
 	LowRate numeric(19,4),
 	CheckInTime VARCHAR(10),
@@ -96,7 +91,7 @@ CREATE INDEX activeproperties_regionid ON activepropertylist(RegionID);
 DROP TABLE IF EXISTS pointsofinterestcoordinateslist;
 CREATE TABLE pointsofinterestcoordinateslist
 (
-	RegionID INT NOT NULL,
+	RegionID BIGINT NOT NULL,
 	RegionName VARCHAR(255),
 ## as it will be the key need to be less than 767 bytes (767 / 4 = 191.75)  
 	RegionNameLong VARCHAR(191),
@@ -106,9 +101,6 @@ CREATE TABLE pointsofinterestcoordinateslist
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (RegionNameLong)
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
--- ENGINE=MyISAM;
--- http://dev.mysql.com/doc/refman/5.5/en/creating-spatial-indexes.html
-
 
 ## index by RegionID to use as relational key
 CREATE INDEX idx_pointsofinterestcoordinateslist_regionid ON pointsofinterestcoordinateslist(RegionID);
@@ -130,8 +122,8 @@ CREATE TABLE countrylist
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
 ## add indexes by country code & country name
-CREATE UNIQUE INDEX idx_countrylist_countrycode ON countrylist(CountryCode);
-CREATE UNIQUE INDEX idx_countrylist_countryname ON countrylist(CountryName);
+CREATE INDEX idx_countrylist_countrycode ON countrylist(CountryCode);
+CREATE INDEX idx_countrylist_countryname ON countrylist(CountryName);
 
 
 DROP TABLE IF EXISTS propertytypelist;
@@ -267,6 +259,7 @@ CREATE TABLE propertyattributelink
 	LanguageCode VARCHAR(5),
 	AppendTxt VARCHAR(191),
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+## table so far do not present the same problem as GDSpropertyattributelink
 	PRIMARY KEY (EANHotelID, AttributeID)
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 ## add reverse index to speed up reversed join queries
@@ -291,7 +284,7 @@ CREATE TABLE hotelimagelist
 	Height INT,
 	ByteSize INT,
 	ThumbnailURL VARCHAR(300),
-	DefaultImage BOOLEAN,
+	DefaultImage bit,
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (URL)
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
@@ -302,7 +295,7 @@ CREATE INDEX idx_hotelimagelist_eanhotelid ON hotelimagelist(EANHotelID);
 DROP TABLE IF EXISTS citycoordinateslist;
 CREATE TABLE citycoordinateslist
 (
-	RegionID INT NOT NULL,
+	RegionID BIGINT NOT NULL,
 	RegionName VARCHAR(255),
 	Coordinates TEXT,
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -315,7 +308,7 @@ CREATE TABLE citycoordinateslist
 DROP TABLE IF EXISTS aliasregionlist;
 CREATE TABLE aliasregionlist
 (
-	RegionID INT NOT NULL,
+	RegionID BIGINT NOT NULL,
 	LanguageCode VARCHAR(5),
 	AliasString VARCHAR(255),
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -327,13 +320,13 @@ CREATE INDEX idx_aliasregionid_regionid ON aliasregionlist(RegionID);
 DROP TABLE IF EXISTS parentregionlist;
 CREATE TABLE parentregionlist
 (
-	RegionID INT NOT NULL,
+	RegionID BIGINT NOT NULL,
 	RegionType VARCHAR(50),
 	RelativeSignificance VARCHAR(3),
 	SubClass VARCHAR(50),
 	RegionName VARCHAR(255),
 	RegionNameLong VARCHAR(510),
-	ParentRegionID INT,
+	ParentRegionID BIGINT,
 	ParentRegionType VARCHAR(50),
 	ParentRegionName VARCHAR(255),
 	ParentRegionNameLong VARCHAR(510),
@@ -345,7 +338,7 @@ CREATE INDEX idx_parentregionlist_parentid ON parentregionlist(ParentRegionID);
 DROP TABLE IF EXISTS neighborhoodcoordinateslist;
 CREATE TABLE neighborhoodcoordinateslist
 (
-	RegionID INT NOT NULL,
+	RegionID BIGINT NOT NULL,
 	RegionName VARCHAR(255),
 	Coordinates TEXT,
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -356,7 +349,7 @@ CREATE TABLE neighborhoodcoordinateslist
 DROP TABLE IF EXISTS regioncentercoordinateslist;
 CREATE TABLE regioncentercoordinateslist
 (
-	RegionID INT NOT NULL,
+	RegionID BIGINT NOT NULL,
 	RegionName VARCHAR(255),
 	CenterLatitude numeric(9,6),
 	CenterLongitude numeric(9,6),
@@ -368,7 +361,7 @@ CREATE TABLE regioncentercoordinateslist
 DROP TABLE IF EXISTS regioneanhotelidmapping;
 CREATE TABLE regioneanhotelidmapping
 (
-	RegionID INT NOT NULL,
+	RegionID BIGINT NOT NULL,
 	EANHotelID INT NOT NULL,
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (RegionID, EANHotelID)
@@ -458,45 +451,6 @@ CREATE TABLE propertyrenovationslist
 	PRIMARY KEY (EANHotelID)
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
-### table to identify pre/post pay (ONLY for authorized partners)
-### Business Model Flag - Expedia Collect (1), Hotel Collect (2) and ETP (3) inventory.
-DROP TABLE IF EXISTS activepropertybusinessmodel;
-CREATE TABLE activepropertybusinessmodel
-(
-	EANHotelID INT NOT NULL,
-	SequenceNumber INT,
-	Name VARCHAR(70),
-	Address1 VARCHAR(50),
-	Address2 VARCHAR(50),
-	City VARCHAR(50),
-	StateProvince VARCHAR(2),
-	PostalCode VARCHAR(15),
-	Country VARCHAR(2),
-	Latitude numeric(8,5),
-	Longitude numeric(8,5),
-	AirportCode VARCHAR(3),
-	PropertyCategory INT,
-	PropertyCurrency VARCHAR(3),
-	StarRating numeric(2,1),
-	Confidence INT,
-	SupplierType VARCHAR(3),
-	Location VARCHAR(80),
-	ChainCodeID INT,
-	RegionID INT,
-	HighRate numeric(19,4),
-	LowRate numeric(19,4),
-	CheckInTime VARCHAR(10),
-	CheckOutTime VARCHAR(10),
-	BusinessModelMask INT,
-  TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	PRIMARY KEY (EANHotelID)
-) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
-
-## index by Latitude, Longitude to use for geosearches
-CREATE INDEX activemodel_geoloc ON activepropertybusinessmodel(Latitude, Longitude);
-## index by RegionID to use for Regions searches
-CREATE INDEX activemodel_regionid ON activepropertybusinessmodel(RegionID);
-
 
 ##################################################################
 ## STORED PROCEDURE sp_hotels_from_point
@@ -544,20 +498,6 @@ ORDER BY distance ASC;
 END 
 $$
 DELIMITER ;
-
-##################################################################
-## Calculate distance between two GPS locations
-## USAGE: DISTANCE_BETWEEN_GPS(-34.017330, 22.809500, latitude, longitude)
-##
-DROP FUNCTION IF EXISTS DISTANCE_BETWEEN_GPS;
-DELIMITER $$
-CREATE FUNCTION DISTANCE_BETWEEN_GPS(geo1_latitude decimal(10,6), geo1_longitude decimal(10,6), geo2_latitude decimal(10,6), geo2_longitude decimal(10,6))
-returns decimal(10,3) DETERMINISTIC
-BEGIN
-  return ((ACOS(SIN(geo1_latitude * PI() / 180) * SIN(geo2_latitude * PI() / 180) + COS(geo1_latitude * PI() / 180) * COS(geo2_latitude * PI() / 180) * COS((geo1_longitude - geo2_longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515);
-END $$
-DELIMITER ;
-
 ##################################################################
 ##this version will allow you to restrict the results:
 ##stay in an Specific Country
@@ -652,7 +592,7 @@ DELIMITER ;
 
 ##################################################################
 ## Stored Procedure & structures to create a log of changes
-## for the activepropertybusinessmodel Table
+## for the activepropertylist Table
 ## looking to detect:
 ## 1. new records
 ## 2. deleted records
@@ -660,7 +600,7 @@ DELIMITER ;
 ## 4. EANHotelID new record for an old existing hotel
 ###################################################################
 
-## table used to log the changes that happens to activepropertybusinessmodel
+## table used to log the changes that happens to activepropertylist
 DROP TABLE IF EXISTS log_activeproperty_changes;
 CREATE TABLE log_activeproperty_changes
 (
@@ -678,8 +618,8 @@ CREATE INDEX log_activeproperties ON log_activeproperty_changes(TimeStamp, EANHo
 
 ##################################################################
 ## STEP 1 - Save Old records
-## must be called BEFORE refreshing activepropertybusinessmodel
-## will create a copy of activepropertybusinessmodel 
+## must be called BEFORE refreshing activepropertylist
+## will create a copy of activepropertylist 
 ## that we later use to analize what has changed
 ##################################################################
 DROP PROCEDURE IF EXISTS sp_log_createcopy;
@@ -687,15 +627,15 @@ DELIMITER $$
 CREATE PROCEDURE sp_log_createcopy()
 BEGIN
 DROP TABLE IF EXISTS oldactivepropertylist;
-CREATE TABLE oldactivepropertylist LIKE eanprod.activepropertybusinessmodel;
-INSERT oldactivepropertylist SELECT * FROM eanprod.activepropertybusinessmodel;
+CREATE TABLE oldactivepropertylist LIKE eanprod.activepropertylist;
+INSERT oldactivepropertylist SELECT * FROM eanprod.activepropertylist;
 END 
 $$
 DELIMITER ;
 
 ##################################################################
 ## STEP 2 - add Added Records to log table
-## must be called AFTER refreshing activepropertybusinessmodel
+## must be called AFTER refreshing activepropertylist
 ## will classify as added / reactivated
 ##################################################################
 DROP PROCEDURE IF EXISTS sp_log_addedrecords;
@@ -714,7 +654,7 @@ SELECT @max_eanid:=MAX(EANHotelID) FROM oldactivepropertylist;
 INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
 SELECT NOW.EANHotelID,'EANHotelID' AS FieldName,'int' AS FieldType, NULL as FieldValueOld, 'reactivated record' as FieldValueNew
 FROM oldactivepropertylist AS OLD
-RIGHT JOIN activepropertybusinessmodel AS NOW
+RIGHT JOIN activepropertylist AS NOW
 ON OLD.EANHotelID=NOW.EANHotelID
 WHERE OLD.EANHotelID IS NULL AND NOW.EANHotelID <= @max_eanid;
 
@@ -724,7 +664,7 @@ WHERE OLD.EANHotelID IS NULL AND NOW.EANHotelID <= @max_eanid;
 INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
 SELECT NOW.EANHotelID,'EANHotelID' AS FieldName,'int' AS FieldType, NULL as FieldValueOld, 'added record' as FieldValueNew
 FROM oldactivepropertylist AS OLD
-RIGHT JOIN activepropertybusinessmodel AS NOW
+RIGHT JOIN activepropertylist AS NOW
 ON OLD.EANHotelID=NOW.EANHotelID
 WHERE OLD.EANHotelID IS NULL AND NOW.EANHotelID > @max_eanid;
 
@@ -734,7 +674,7 @@ DELIMITER ;
 
 ##################################################################
 ## STEP 3 - add Erased Records as (stop-sell) to log table
-## must be called AFTER refreshing activepropertybusinessmodel
+## must be called AFTER refreshing activepropertylist
 ##################################################################
 DROP PROCEDURE IF EXISTS sp_log_erasedrecords;
 DELIMITER $$
@@ -746,7 +686,7 @@ BEGIN
 INSERT INTO log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
 SELECT OLD.EANHotelID,'EANHotelID' AS FieldName,'int' AS FieldType, NULL as FieldValueOld, 'stop-sell record' as FieldValueNew
 FROM oldactivepropertylist AS OLD
-LEFT JOIN activepropertybusinessmodel AS NOW
+LEFT JOIN activepropertylist AS NOW
 ON OLD.EANHotelID=NOW.EANHotelID
 WHERE NOW.EANHotelID IS NULL;
 END 
@@ -755,7 +695,7 @@ DELIMITER ;
 
 ##################################################################
 ## STEP 4 - Erase common records
-## must be called AFTER refreshing activepropertybusinessmodel
+## must be called AFTER refreshing activepropertylist
 ## will erase all records that are the same (based on an specific field list)
 ##################################################################
 DROP PROCEDURE IF EXISTS sp_log_erase_common;
@@ -764,17 +704,17 @@ CREATE PROCEDURE sp_log_erase_common()
 BEGIN
 DELETE oldactivepropertylist
 FROM oldactivepropertylist
-JOIN activepropertybusinessmodel
+JOIN activepropertylist
 USING (EANHotelID,Name,Address1,Address2,City,StateProvince,PostalCode,Country,
 		Latitude,Longitude,AirportCode,PropertyCategory,PropertyCurrency,
-		SupplierType,ChainCodeID,BusinessModelMask);
+		SupplierType,Location,ChainCodeID,CheckInTime,CheckOutTime);
 END
 $$
 DELIMITER ;
 
 ##################################################################
 ## STEP 5 - Erase deleted records (after logging them)
-## must be called AFTER refreshing activepropertybusinessmodel, and sp_log_erasedrecords
+## must be called AFTER refreshing activepropertylist, and sp_log_erasedrecords
 ## will erase all records in old-table
 ##################################################################
 DROP PROCEDURE IF EXISTS sp_log_erase_deleted;
@@ -783,16 +723,16 @@ CREATE PROCEDURE sp_log_erase_deleted()
 BEGIN
 DELETE oldactivepropertylist
 FROM oldactivepropertylist
-LEFT JOIN activepropertybusinessmodel
-ON oldactivepropertylist.EANHotelID=activepropertybusinessmodel.EANHotelID
-WHERE activepropertybusinessmodel.EANHotelID IS NULL;
+LEFT JOIN activepropertylist
+ON oldactivepropertylist.EANHotelID=activepropertylist.EANHotelID
+WHERE activepropertylist.EANHotelID IS NULL;
 END
 $$
 DELIMITER ;
 
 ##################################################################
 ## STEP 6 - Work with the changed records
-## must be called AFTER refreshing activepropertybusinessmodel
+## must be called AFTER refreshing activepropertylist
 ## analize the changed data, looping thru the available records
 ##################################################################
 DROP PROCEDURE IF EXISTS sp_log_changedrecords;
@@ -800,42 +740,45 @@ DELIMITER $$
 CREATE PROCEDURE sp_log_changedrecords()
 BEGIN
   DECLARE done INT DEFAULT FALSE;
-  DECLARE oEANHotelID,oPropertyCategory,oBusinessModelMask INT;
+  DECLARE oEANHotelID,oPropertyCategory INT;
   DECLARE oName VARCHAR(70);
   DECLARE oAddress1,oAddress2,oCity VARCHAR(50);
   DECLARE oStateProvince,oCountry VARCHAR(2);
   DECLARE oPostalCode VARCHAR(15);
   DECLARE oLatitude,oLongitude NUMERIC(8,5);
   DECLARE oAirportCode,oPropertyCurrency,oSupplierType VARCHAR(3);
-  DECLARE oChainCodeID INT;
+  DECLARE oLocation VARCHAR(80);
+  DECLARE oChainCodeID VARCHAR(5);
+  DECLARE oCheckInTime,oCheckOutTime VARCHAR(10);
   
-  DECLARE nEANHotelID,nPropertyCategory,nBusinessModelMask INT;
+  DECLARE nEANHotelID,nPropertyCategory INT;
   DECLARE nName VARCHAR(70);
   DECLARE nAddress1,nAddress2,nCity VARCHAR(50);
   DECLARE nStateProvince,nCountry VARCHAR(2);
   DECLARE nPostalCode VARCHAR(15);
   DECLARE nLatitude,nLongitude NUMERIC(8,5);
   DECLARE nAirportCode,nPropertyCurrency,nSupplierType VARCHAR(3);
-  DECLARE nChainCodeID INT;
+  DECLARE nLocation VARCHAR(80);
+  DECLARE nChainCodeID VARCHAR(5);
+  DECLARE nCheckInTime,nCheckOutTime VARCHAR(10);
   
   DECLARE cur CURSOR FOR SELECT o.EANHotelID,o.Name,o.Address1,o.Address2,o.City,o.StateProvince,o.PostalCode,o.Country,
 		o.Latitude,o.Longitude,o.AirportCode,o.PropertyCategory,o.PropertyCurrency,
-		o.SupplierType,o.ChainCodeID,o.BusinessModelMask,
+		o.SupplierType,o.Location,o.ChainCodeID,o.CheckInTime,o.CheckOutTime,
 	    n.EANHotelID,n.Name,n.Address1,n.Address2,n.City,n.StateProvince,n.PostalCode,n.Country,
 		n.Latitude,n.Longitude,n.AirportCode,n.PropertyCategory,n.PropertyCurrency,
-		n.SupplierType,n.ChainCodeID,n.BusinessModelMask
-		FROM eanprod.oldactivepropertylist AS o
-		LEFT JOIN activepropertybusinessmodel AS n ON o.EANHotelID=n.EANHotelID;
+		n.SupplierType,n.Location,n.ChainCodeID,n.CheckInTime,n.CheckOutTime FROM eanprod.oldactivepropertylist AS o
+		LEFT JOIN activepropertylist AS n ON o.EANHotelID=n.EANHotelID;
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
   OPEN cur;
   read_loop: LOOP
     FETCH cur INTO oEANHotelID,oName,oAddress1,oAddress2,oCity,oStateProvince,oPostalCode,oCountry,
 		oLatitude,oLongitude,oAirportCode,oPropertyCategory,oPropertyCurrency,
-		oSupplierType,oChainCodeID,oBusinessModelMask,
+		oSupplierType,oLocation,oChainCodeID,oCheckInTime,oCheckOutTime,
     	nEANHotelID,nName,nAddress1,nAddress2,nCity,nStateProvince,nPostalCode,nCountry,
 		nLatitude,nLongitude,nAirportCode,nPropertyCategory,nPropertyCurrency,
-		nSupplierType,nChainCodeID,nBusinessModelMask;
+		nSupplierType,nLocation,nChainCodeID,nCheckInTime,nCheckOutTime;
     IF done THEN
       LEAVE read_loop;
     END IF;
@@ -887,25 +830,25 @@ BEGIN
       INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'PropertyCurrency','VARCHAR(3)',oPropertyCurrency,nPropertyCurrency);
     END IF;
-    IF oSupplierType = 'GDS' AND nSupplierType = 'ESR' THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
-      VALUES (nEANHotelID,'EANHotelID','INT','moved to ESR','added record');      
-    END IF;
-    IF oSupplierType = 'ESR' AND nSupplierType = 'GDS' THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
-      VALUES (nEANHotelID,'EANHotelID','INT','moved to GDS','stop-sell record');      
-      END IF;
     IF oSupplierType != nSupplierType THEN
       INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'SupplierType','VARCHAR(3)',oSupplierType,nSupplierType);
+    END IF;
+    IF oLocation != nLocation THEN
+      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      VALUES (nEANHotelID,'Location','VARCHAR(80)',oLocation,nLocation);
     END IF; 
     IF oChainCodeID != nChainCodeID THEN
       INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
-      VALUES (nEANHotelID,'ChainCodeID','INT',oChainCodeID,nChainCodeID);
+      VALUES (nEANHotelID,'ChainCodeID','VARCHAR(5)',oChainCodeID,nChainCodeID);
     END IF;
-    IF oBusinessModelMask != nBusinessModelMask THEN
+    IF oCheckInTime != nCheckInTime THEN
       INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
-      VALUES (nEANHotelID,'BusinessModelMask','INT',oBusinessModelMask,nBusinessModelMask);
+      VALUES (nEANHotelID,'CheckInTime','VARCHAR(10)',oCheckInTime,nCheckInTime);
+    END IF;
+    IF oCheckOutTime != nCheckOutTime THEN
+      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
+      VALUES (nEANHotelID,'CheckOutTime','VARCHAR(10)',oCheckOutTime,nCheckOutTime);
     END IF;
 
   END LOOP;
@@ -959,445 +902,3 @@ BEGIN
 END 
 $$
 DELIMITER ;
-
-###########
-## This variation give the result as a percentage of similarity
-##
-DROP FUNCTION IF EXISTS LEVENSHTEIN_RATIO;
-DELIMITER $$
-CREATE FUNCTION LEVENSHTEIN_RATIO( s1 text, s2 text )
-RETURNS INT(11)
-DETERMINISTIC
-BEGIN 
-    DECLARE s1_len, s2_len, max_len INT; 
-    SET s1_len = LENGTH(s1), s2_len = LENGTH(s2); 
-    IF s1_len > s2_len THEN  
-      SET max_len = s1_len;  
-    ELSE  
-      SET max_len = s2_len;  
-    END IF; 
-    RETURN ROUND((1 - LEVENSHTEIN(s1, s2) / max_len) * 100); 
-END
-$$
-DELIMITER ;
-  
-##################################################################
-## CAP_FIRST Formula - Uppercase Just The First Letter
-## used to normalize data cases
-## EXAMPLE
-## usage: CAP_FIRST('cape verde') -> 'Cape Verde'
-##
-DROP FUNCTION IF EXISTS CAP_FIRST;
-DELIMITER $$
-CREATE FUNCTION CAP_FIRST (input VARCHAR(255))
-RETURNS VARCHAR(255) 
-DETERMINISTIC
-BEGIN
-	DECLARE len INT;
-	DECLARE i INT;
-	SET len   = CHAR_LENGTH(input);
-	SET input = LOWER(input);
-	SET i = 0;
-	WHILE (i < len) DO
-		IF (MID(input,i,1) = ' ' OR i = 0) THEN
-			IF (i < len) THEN
-				SET input = CONCAT(
-					LEFT(input,i),
-					UPPER(MID(input,i + 1,1)),
-					RIGHT(input,len - i - 1)
-				);
-			END IF;
-		END IF;
-		SET i = i + 1;
-	END WHILE;
-	RETURN input;
-END 
-$$
-DELIMITER ;
-
-#####################################################################
-## REGION_NAME_CLEAN - Eliminate all '(something)' from a string 
-## used to eliminate things like '(type 7)' or '(and vicinity)' from
-## Region Names.
-## EXAMPLE
-## usage: REGION_NAME_CLEAN('Orlando (and vicinity)') -> 'Orlando'
-##
-DROP FUNCTION IF EXISTS REGION_NAME_CLEAN;
-DELIMITER $$
-CREATE FUNCTION REGION_NAME_CLEAN(input VARCHAR(255))
-RETURNS VARCHAR(255)
-DETERMINISTIC
-BEGIN
-	IF (LOCATE('(',input) > 0) THEN
-	   SET input = CONCAT(LEFT(input,LOCATE('(',input)-2),
-	       RIGHT(input,CHAR_LENGTH(input)-LOCATE(')',input))
-	   );
-	END IF;
-  RETURN input;
-END;
-$$
-DELIMITER ;
-
-#####################################################################
-## STRING_SPLIT & EXTRACT_ADDRESS_PART
-## Extract the "City" or "StateProvice" or "Country" from
-## a "City, StateProvince, Country" or "City, Country" structure
-## expanded to support: 
-## "Something, Whatever, City, StateProvince, Country" structures or longer
-##
-DROP FUNCTION IF EXISTS STRING_SPLIT;
-CREATE FUNCTION STRING_SPLIT(x varchar(21845), delim varchar(12), pos int) returns varchar(21845)
-RETURN TRIM(replace(substring(substring_index(x, delim, pos), length(substring_index(x, delim, pos - 1)) + 1), delim, ''));
-
-DROP FUNCTION IF EXISTS COMMAS_COUNT;
-CREATE FUNCTION COMMAS_COUNT(CommaDelimColumn VARCHAR(21845)) returns int
-RETURN LENGTH(TRIM(BOTH ',' FROM CommaDelimColumn)) - LENGTH(REPLACE(TRIM(BOTH ',' FROM CommaDelimColumn), ',', ''));
-
--- include all available to the LEFT
-DROP FUNCTION IF EXISTS LSTRING_SPLIT;
-CREATE FUNCTION LSTRING_SPLIT(x varchar(21845), delim varchar(12), pos int) returns varchar(21845)
-RETURN TRIM(replace(substring(substring_index(x, delim, pos), length(substring_index(x, delim, pos - 1)) + 1), delim, ''));
-
-DROP FUNCTION IF EXISTS EXTRACT_ADDRESS_PART;
-DELIMITER $$
-CREATE FUNCTION EXTRACT_ADDRESS_PART( source VARCHAR(21845), part VARCHAR(21845) )
-RETURNS VARCHAR(21845)
-DETERMINISTIC
-BEGIN
-DECLARE vcommas INT;
-DECLARE part_out VARCHAR(21845);
-SET source = REPLACE(source, 'Mexico, Estado de', 'Estado de Mexico');
-SET vcommas = COMMAS_COUNT(source);
-    IF vcommas > 1 THEN
-       IF part = 'LeftCity'      THEN SET part_out = LSTRING_SPLIT(source,',',(vcommas-1)); END IF;    
-       IF part = 'City'          THEN SET part_out = STRING_SPLIT(source,',',(vcommas-1)); END IF;
-       IF part = 'StateProvince' THEN SET part_out = STRING_SPLIT(source,',',vcommas);     END IF;
-       IF part = 'Country'       THEN SET part_out = STRING_SPLIT(source,',',(vcommas+1)); END IF;
-    ELSE  
-       IF part = 'City'          THEN SET part_out = STRING_SPLIT(source,',',1); END IF;
-       IF part = 'StateProvince' THEN SET part_out = NULL;                       END IF;
-       IF part = 'Country'       THEN SET part_out = STRING_SPLIT(source,',',2); END IF;      
-    END IF; 
-    RETURN part_out;
-END
-$$
-DELIMITER ;
-
-#####################################################################
-## REGION_NAME_CHANGE - Replace all '(something)' from a string to '(other)' 
-## used to convert like '(type 7)' or '(and vicinity)' from
-## Region Names to '(area)'
-## EXAMPLE
-## usage: REGION_NAME_CHANGE('Orlando (and vicinity)','(area)') -> 'Orlando (area)'
-##
-DROP FUNCTION IF EXISTS REGION_NAME_CHANGE;
-DELIMITER $$
-CREATE FUNCTION REGION_NAME_CHANGE(input VARCHAR(255), replacestr VARCHAR(255))
-RETURNS VARCHAR(255)
-DETERMINISTIC
-BEGIN
-	IF (LOCATE('(',input) > 0) THEN
-	   SET input = CONCAT(LEFT(input,LOCATE('(',input)-2),' ',replacestr,
-	       RIGHT(input,CHAR_LENGTH(input)-LOCATE(')',input))
-	   );
-	END IF;
-  RETURN input;
-END;
-$$
-DELIMITER ;
-
-#########################################################################
-## REPLACE_ONLY_FIRST -Replace ONLY the first occurence of a string with 
-## the given substring
-##
-## EXAMPLE
-## usage: REPLACE_ONLY_FIRST('Orlando, Florida, USA',',',' (city),') -> 'Orlando (city), FLorida, USA'
-##
-DROP FUNCTION IF EXISTS REPLACE_ONLY_FIRST;
-DELIMITER $$
-CREATE FUNCTION REPLACE_ONLY_FIRST(input VARCHAR(255),findstr VARCHAR(255), replacestr VARCHAR(255))
-RETURNS VARCHAR(255)
-DETERMINISTIC
-BEGIN
-	IF (LOCATE(findstr,input) > 0) THEN
-       SET input = CONCAT(REPLACE(LEFT(input, INSTR(input, findstr)), findstr, replacestr),
-       SUBSTRING(input, INSTR(input, findstr) + 1));
-	END IF;
-  RETURN input;
-END;
-$$
-DELIMITER ;
-
-/*###################################################################
-## HOTELS_IN_REGION - Return comma delimited list of hotel ids
-## for any given EANRegionID INT value
-# changed the maximum for group_concat len to include all list
-## EXAMPLE
-## usage: HOTELS_IN_REGION(179898) -> '99999,999999,99999,99999,...'
-## 179898 - Paris (Vicinity)
-## 12/10/2014 UPDATED: to use ActivePropertyBusinessModel (Pre/Post pay properties table)
-## 02/04/2015 UPDATED: to use the SequenceNumber for Sorting
-*/
-DROP FUNCTION IF EXISTS HOTELS_IN_REGION;
-DELIMITER $$
-
-CREATE FUNCTION HOTELS_IN_REGION(input INT)
-    RETURNS TEXT
-BEGIN
-    SET SESSION group_concat_max_len = 1000000;
-    SELECT GROUP_CONCAT(eanprod.activepropertybusinessmodel.EANHotelID ORDER BY eanprod.activepropertybusinessmodel.SequenceNumber)
-    FROM eanprod.regioneanhotelidmapping
-    JOIN eanprod.activepropertybusinessmodel
-    ON eanprod.regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID 
-    WHERE eanprod.regioneanhotelidmapping.RegionID = input ORDER BY eanprod.activepropertybusinessmodel.SequenceNumber INTO @MyRetList;
-    RETURN @MyRetList;
-END;
-$$
-DELIMITER ;
-
-/*###################################################################
-## HOTELS_IN_REGION_COUNT - Return the amt of hotels in a RegionID
-## for any given EANRegionID INT value
-## EXAMPLE
-## usage: HOTELS_IN_REGION_COUNT(3179) -> 71
-*/
-DROP FUNCTION IF EXISTS HOTELS_IN_REGION_COUNT;
-DELIMITER $$
-
-CREATE FUNCTION HOTELS_IN_REGION_COUNT(input INT)
-    RETURNS INT
-BEGIN
-    SELECT COUNT(eanprod.activepropertybusinessmodel.EANHotelID)
-    FROM   eanprod.regioneanhotelidmapping
-    JOIN eanprod.activepropertybusinessmodel
-    ON eanprod.regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID
-    WHERE  eanprod.regioneanhotelidmapping.RegionID = input INTO @MyRetCnt;
-    RETURN @MyRetCnt;
-END;
-$$
-DELIMITER ;
-
-#####################################################################
-## HOTELS_IN_REGION_LIST - Return comma delimited list of hotel ids
-## for any given comma delimited list of EANRegionIDs STRING value
-## usage: HOTELS_IN_REGION_LIST('3179,506189,6004932,6004934,6082360,6139938');
-## DISTINCT in the group_concat will avoid duplicating EANHotelIDs that are used on multiple regions
-## FIND_IN_SET take care of been able to send a list of comma delimited (string) of EANHotelIDs
-##
-DROP FUNCTION IF EXISTS HOTELS_IN_REGION_LIST;
-DELIMITER $$
-
-CREATE FUNCTION HOTELS_IN_REGION_LIST(input_array TEXT)
-    RETURNS TEXT
-BEGIN
-    SET SESSION group_concat_max_len = 1000000;
-    SELECT GROUP_CONCAT(DISTINCT eanprod.regioneanhotelidmapping.EANHotelID ORDER BY eanprod.activepropertybusinessmodel.SequenceNumber)
-    FROM   eanprod.regioneanhotelidmapping
-    JOIN eanprod.activepropertybusinessmodel
-    ON eanprod.regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID 
-    WHERE FIND_IN_SET(eanprod.regioneanhotelidmapping.RegionID,input_array) ORDER BY eanprod.activepropertybusinessmodel.SequenceNumber INTO @MyRetList;
-    RETURN @MyRetList;
-END$$
-DELIMITER ;
-
-#####################################################################
-## HOTELS_IN_REGION_LIST_COUNT - Return the amt of hotels in a LIST of RegionIDs
-## for any given list of EANRegionID STRING value
-## EXAMPLE
-## usage: HOTELS_IN_REGION_LIST_COUNT('3179,506189,6004932,6004934,6082360,6139938') -> 137
-##
-DROP FUNCTION IF EXISTS HOTELS_IN_REGION_LIST_COUNT;
-DELIMITER $$
-
-CREATE FUNCTION HOTELS_IN_REGION_LIST_COUNT(input_array TEXT)
-    RETURNS INT
-BEGIN
-    SELECT COUNT(DISTINCT eanprod.activepropertybusinessmodel.EANHotelID)
-    FROM   eanprod.regioneanhotelidmapping
-    JOIN eanprod.activepropertybusinessmodel
-    ON eanprod.regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID
-    WHERE  FIND_IN_SET(eanprod.regioneanhotelidmapping.RegionID,input_array) INTO @MyRetCnt;
-    RETURN @MyRetCnt;
-END$$
-DELIMITER ;
-
-#####################################################################
-## REGIONS_FOR_HOTEL - Return comma delimited list of Region ids
-## for any given EANHotelID INT value
-# changed the maximum for group_concat len to include all list
-## EXAMPLE
-## usage: REGIONS_FOR_HOTEL(4110) -> '99999,999999,99999,99999,...'
-##
-DROP FUNCTION IF EXISTS REGIONS_FOR_HOTEL;
-DELIMITER $$
-
-CREATE FUNCTION REGIONS_FOR_HOTEL(input INT)
-    RETURNS TEXT
-BEGIN
-    SET SESSION group_concat_max_len = 1000000;
-    SELECT GROUP_CONCAT(eanprod.regioneanhotelidmapping.RegionID)
-    FROM   eanprod.regioneanhotelidmapping
-    JOIN eanprod.activepropertybusinessmodel
-    ON eanprod.regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID
-    WHERE  eanprod.activepropertybusinessmodel.EANHotelID = input INTO @MyRetList;
-    RETURN @MyRetList;
-END;
-$$
-DELIMITER ;
-
-#####################################################################
-## REGIONS_FOR_HOTEL_COUNT - Return the amt of Regions that an hotel belongs
-## for any given EANHotelID INT value
-## EXAMPLE
-## usage: REGIONS_FOR_HOTEL_COUNT(4110) -> 125
-##
-DROP FUNCTION IF EXISTS REGIONS_FOR_HOTEL_COUNT;
-DELIMITER $$
-
-CREATE FUNCTION REGIONS_FOR_HOTEL_COUNT(input INT)
-    RETURNS INT
-BEGIN
-    SELECT COUNT(eanprod.regioneanhotelidmapping.RegionID)
-    FROM   eanprod.regioneanhotelidmapping
-    JOIN eanprod.activepropertybusinessmodel
-    ON eanprod.regioneanhotelidmapping.EANHotelID = eanprod.activepropertybusinessmodel.EANHotelID
-    WHERE  eanprod.activepropertybusinessmodel.EANHotelID = input INTO @MyRetCnt;
-    RETURN @MyRetCnt;
-END;
-$$
-DELIMITER ;
-
-#####################################################################
-## SORT_LIST - sort comma separated substrings with unoptimized bubble sort
-## swap areas TEXT for string compare, INT for numeric compare
-DROP FUNCTION IF EXISTS SORT_LIST;
-DELIMITER $$
-CREATE FUNCTION SORT_LIST(inString TEXT) RETURNS TEXT
-BEGIN
-	DECLARE delim CHAR(1) DEFAULT ','; 
-	DECLARE strings INT DEFAULT 0;
-  	DECLARE forward INT DEFAULT 1;
-  	DECLARE backward INT;
-  	DECLARE remain TEXT;
-  	DECLARE swap1 TEXT;
-  	DECLARE swap2 TEXT;
-  	SET remain = inString;
-  	SET backward = LOCATE(delim, remain);
-  	WHILE backward != 0 DO
-		SET strings = strings + 1;
-    	SET backward = LOCATE(delim, remain);
-    	SET remain = SUBSTRING(remain, backward+1);
-  	END WHILE;
-  	IF strings < 2 THEN RETURN inString; END IF;
-  	REPEAT
-    	SET backward = strings;
-    	REPEAT
-      		SET swap1 = SUBSTRING_INDEX(SUBSTRING_INDEX(inString,delim,backward-1),delim,-1);
-      		SET swap2 = SUBSTRING_INDEX(SUBSTRING_INDEX(inString,delim,backward),delim,-1);
-      		IF  swap1 > swap2 THEN
-        		SET inString = TRIM(BOTH delim FROM CONCAT_WS(delim,SUBSTRING_INDEX(inString,delim,backward-2)
-        			,swap2,swap1,SUBSTRING_INDEX(inString,delim,(backward-strings))));
-      		END IF;
-      		SET backward = backward - 1;
-    	UNTIL backward < 2 END REPEAT;
-    	SET forward = forward +1;
-  	UNTIL forward + 1 > strings
-  	END REPEAT;
-RETURN inString;
-END;
-$$
-DELIMITER ;
-
-#####################################################################
-## SORT_ID_LIST - sort comma separated list of numeric values
-## with unoptimized bubble sort
-## swap areas TEXT for string compare, INT for numeric compare
-DROP FUNCTION IF EXISTS SORT_ID_LIST;
-DELIMITER $$
-CREATE FUNCTION SORT_ID_LIST(inString TEXT) RETURNS TEXT
-BEGIN
-	DECLARE delim CHAR(1) DEFAULT ','; 
-	DECLARE strings INT DEFAULT 0;
-  	DECLARE forward INT DEFAULT 1;
-  	DECLARE backward INT;
-  	DECLARE remain TEXT;
-  	DECLARE swap1 INT;
-  	DECLARE swap2 INT;
-  	SET remain = inString;
-  	SET backward = LOCATE(delim, remain);
-  	WHILE backward != 0 DO
-		SET strings = strings + 1;
-    	SET backward = LOCATE(delim, remain);
-    	SET remain = SUBSTRING(remain, backward+1);
-  	END WHILE;
-  	IF strings < 2 THEN RETURN inString; END IF;
-  	REPEAT
-    	SET backward = strings;
-    	REPEAT
-      		SET swap1 = SUBSTRING_INDEX(SUBSTRING_INDEX(inString,delim,backward-1),delim,-1);
-      		SET swap2 = SUBSTRING_INDEX(SUBSTRING_INDEX(inString,delim,backward),delim,-1);
-      		IF  swap1 > swap2 THEN
-        		SET inString = TRIM(BOTH delim FROM CONCAT_WS(delim,SUBSTRING_INDEX(inString,delim,backward-2)
-        			,swap2,swap1,SUBSTRING_INDEX(inString,delim,(backward-strings))));
-      		END IF;
-      		SET backward = backward - 1;
-    	UNTIL backward < 2 END REPEAT;
-    	SET forward = forward +1;
-  	UNTIL forward + 1 > strings
-  	END REPEAT;
-RETURN inString;
-END;
-$$
-DELIMITER ;
-
-
-#####################################################################
-## TRANSLITERATE - Return the converted version (transliteration)
-## for cleaning accented character and use in searches
-## EXAMPLE
-## usage: TRANSLITERATE(name) -> Name without the accents
-##
-DROP FUNCTION IF EXISTS TRANSLITERATE;
-DELIMITER $$
-CREATE FUNCTION TRANSLITERATE(str TEXT)
-RETURNS text
-LANGUAGE SQL
-DETERMINISTIC
-NO SQL
-SQL SECURITY INVOKER
-COMMENT ''
-BEGIN
-   DECLARE dict_from VARCHAR(255);
-   DECLARE dict_to VARCHAR(255);
-   DECLARE len INTEGER;
-   DECLARE i INTEGER;
-   SET dict_from = 'ÁáâäãÉÊèéëÍÎîíÓÕóôÚúüñÑÇç';
-   SET dict_to   = 'AaaaaEEeeeIIiiOOooUuunNCc';
-   SET len = CHAR_LENGTH(dict_from);
-   SET i = 1;
-   WHILE len >= i DO
-      SET @f = SUBSTR(dict_from, i, 1);
-      SET @t = IF(dict_to IS NULL, '', SUBSTR(dict_to, i, 1));
-      SET str = REPLACE(str, @f, @t);
-      SET i = i + 1;
-   END WHILE;
-   RETURN str;
-END
-$$
-DELIMITER ;
-
-/*********************************************************
-** FUNCTION to return the text inside parenthesis       **
-** used to extract Airport Codes from ParentRegionList  **
-*********************************************************/
-DROP FUNCTION IF EXISTS TEXT_INSIDE_PARENTNESIS;
-DELIMITER $$
-CREATE FUNCTION TEXT_INSIDE_PARENTNESIS(input VARCHAR(510))
-   RETURNS VARCHAR(255)
-BEGIN
-   RETURN SUBSTR(input, LOCATE('(',input)+1,(CHAR_LENGTH(input) - LOCATE(')',REVERSE(input)) - LOCATE('(',input)));
-END
-$$
-DELIMITER ;
-
--- EOF (MySQL_create_eanprod.sql) --
