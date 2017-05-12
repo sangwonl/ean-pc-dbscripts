@@ -91,31 +91,31 @@ ActivePropertyBusinessModel
 #
 # To Add a language set, use this as a reference
 #
-#ActivePropertyList_es_ES
-#AliasRegionList_es_ES
-#AreaAttractionsList_es_ES
-#AttributeList_es_ES
-#CountryList_es_ES
-#DiningDescriptionList_es_ES
-#PolicyDescriptionList_es_ES
-#PropertyAttributeLink_es_ES
-#PropertyDescriptionList_es_ES
-#PropertyTypeList_es_ES
-#RecreationDescriptionList_es_ES
-#RegionList_es_ES
-#RoomTypeList_es_ES
-#SpaDescriptionList_es_ES
-#WhatToExpectList_es_ES
-#PropertyLocationList_es_ES
-#PropertyAmenitiesList_es_ES
-#PropertyRoomsList_es_ES
-#PropertyBusinessAmenitiesList_es_ES
-#PropertyNationalRatingsList_es_ES
-#PropertyFeesList_es_ES
-#PropertyMandatoryFeesList_es_ES
-#PropertyRenovationsList_es_ES
-### file for Authorized Partners ONLY
-#ActivePropertyBusinessModel_es_ES
+ActivePropertyList_ko_KR
+AliasRegionList_ko_KR
+AreaAttractionsList_ko_KR
+AttributeList_ko_KR
+CountryList_ko_KR
+DiningDescriptionList_ko_KR
+PolicyDescriptionList_ko_KR
+PropertyAttributeLink_ko_KR
+PropertyDescriptionList_ko_KR
+PropertyTypeList_ko_KR
+RecreationDescriptionList_ko_KR
+RegionList_ko_KR
+RoomTypeList_ko_KR
+SpaDescriptionList_ko_KR
+WhatToExpectList_ko_KR
+PropertyLocationList_ko_KR
+PropertyAmenitiesList_ko_KR
+PropertyRoomsList_ko_KR
+PropertyBusinessAmenitiesList_ko_KR
+PropertyNationalRatingsList_ko_KR
+PropertyFeesList_ko_KR
+PropertyMandatoryFeesList_ko_KR
+PropertyRenovationsList_ko_KR
+## file for Authorized Partners ONLY
+ActivePropertyBusinessModel_ko_KR
 )
 
 ## home where the process will execute
