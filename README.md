@@ -42,3 +42,25 @@ Please contact us with any questions / concern / suggestions.
 
 Partner:Connect Team
 apihelp@expedia.com
+
+
+Using dockerized ean-pc-dbscripts
+=================================
+
+# Build docker image
+```
+$ docker build -t eandb .
+```
+
+# Run mysql first
+```
+$ cd ean-pc-dbscripts
+$ docker run --name eandb --rm -it -p 3306:3306 -v $PWD/mysql-data:/var/lib/mysql -v $PWD/eanfiles:/home/eanuser/eanfiles -e MYSQL_USER=eanuser -e MYSQL_PASSWORD=Passw@rd1 -e MYSQL_DATABASE=eanprod -e MYSQL_ROOT_PASSWORD=Passw@rd1 eandb
+```
+
+# Connect to container and Run refresh script
+```
+$ docker exec -it eandb bash
+# cd /home/eanuser
+# ./EAN_MySQL_refresh.sh
+```
