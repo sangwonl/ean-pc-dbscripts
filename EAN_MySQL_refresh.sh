@@ -47,40 +47,40 @@ LOG_DAYS=30
 # created by create_ean.sql script ##
 #####################################
 FILES=(
-ActivePropertyList
-AirportCoordinatesList
-AliasRegionList
-AreaAttractionsList
-AttributeList
-ChainList
-CityCoordinatesList
-CountryList
-DiningDescriptionList
-HotelImageList
-NeighborhoodCoordinatesList
-ParentRegionList
-PointsOfInterestCoordinatesList
-PolicyDescriptionList
-PropertyAttributeLink
-PropertyDescriptionList
-PropertyTypeList
-RecreationDescriptionList
-RegionCenterCoordinatesList
-RegionEANHotelIDMapping
-RoomTypeList
-SpaDescriptionList
-WhatToExpectList
+# ActivePropertyList
+# AirportCoordinatesList
+# AliasRegionList
+# AreaAttractionsList
+# AttributeList
+# ChainList
+# CityCoordinatesList
+# CountryList
+# DiningDescriptionList
+# HotelImageList
+# NeighborhoodCoordinatesList
+# ParentRegionList
+# PointsOfInterestCoordinatesList
+# PolicyDescriptionList
+# PropertyAttributeLink
+# PropertyDescriptionList
+# PropertyTypeList
+# RecreationDescriptionList
+# RegionCenterCoordinatesList
+# RegionEANHotelIDMapping
+# RoomTypeList
+# SpaDescriptionList
+# WhatToExpectList
 #
 # minorRev=25 added files
 #
-PropertyLocationList
-PropertyAmenitiesList
-PropertyRoomsList
-PropertyBusinessAmenitiesList
-PropertyNationalRatingsList
-PropertyFeesList
-PropertyMandatoryFeesList
-PropertyRenovationsList
+# PropertyLocationList
+# PropertyAmenitiesList
+# PropertyRoomsList
+# PropertyBusinessAmenitiesList
+# PropertyNationalRatingsList
+# PropertyFeesList
+# PropertyMandatoryFeesList
+# PropertyRenovationsList
 ### Special File for Authorized Partners ONLY
 ActivePropertyBusinessModel
 ## <BusinessModelMask> 	<Availability Offered>
@@ -91,29 +91,29 @@ ActivePropertyBusinessModel
 #
 # To Add a language set, use this as a reference
 #
-ActivePropertyList_ko_KR
-AliasRegionList_ko_KR
-AreaAttractionsList_ko_KR
-AttributeList_ko_KR
-CountryList_ko_KR
-DiningDescriptionList_ko_KR
-PolicyDescriptionList_ko_KR
-PropertyAttributeLink_ko_KR
-PropertyDescriptionList_ko_KR
-PropertyTypeList_ko_KR
-RecreationDescriptionList_ko_KR
-RegionList_ko_KR
-RoomTypeList_ko_KR
-SpaDescriptionList_ko_KR
-WhatToExpectList_ko_KR
-PropertyLocationList_ko_KR
-PropertyAmenitiesList_ko_KR
-PropertyRoomsList_ko_KR
-PropertyBusinessAmenitiesList_ko_KR
-PropertyNationalRatingsList_ko_KR
-PropertyFeesList_ko_KR
-PropertyMandatoryFeesList_ko_KR
-PropertyRenovationsList_ko_KR
+# ActivePropertyList_ko_KR
+# AliasRegionList_ko_KR
+# AreaAttractionsList_ko_KR
+# AttributeList_ko_KR
+# CountryList_ko_KR
+# DiningDescriptionList_ko_KR
+# PolicyDescriptionList_ko_KR
+# PropertyAttributeLink_ko_KR
+# PropertyDescriptionList_ko_KR
+# PropertyTypeList_ko_KR
+# RecreationDescriptionList_ko_KR
+# RegionList_ko_KR
+# RoomTypeList_ko_KR
+# SpaDescriptionList_ko_KR
+# WhatToExpectList_ko_KR
+# PropertyLocationList_ko_KR
+# PropertyAmenitiesList_ko_KR
+# PropertyRoomsList_ko_KR
+# PropertyBusinessAmenitiesList_ko_KR
+# PropertyNationalRatingsList_ko_KR
+# PropertyFeesList_ko_KR
+# PropertyMandatoryFeesList_ko_KR
+# PropertyRenovationsList_ko_KR
 ## file for Authorized Partners ONLY
 ActivePropertyBusinessModel_ko_KR
 )
