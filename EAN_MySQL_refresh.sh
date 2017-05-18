@@ -56,7 +56,7 @@ FILES=(
 # CityCoordinatesList
 # CountryList
 # DiningDescriptionList
-# HotelImageList
+HotelImageList
 # NeighborhoodCoordinatesList
 # ParentRegionList
 # PointsOfInterestCoordinatesList
