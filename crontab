@@ -14,4 +14,5 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 52 6    1 * *   root    test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
 
 # Trigger ean refresh script at every 4 AM on Monday
-0  4    * * 1   root    cd /home/eanuser/ && ./EAN_MySQL_refresh.sh
+0  4    * * 1   root    cd /home/eanuser/ && ./EAN_MySQL_refresh.sh && echo "Synced at $(date)" >> syncresult.cron
+*  *    * * *   root    cd /home/eanuser/ && echo "$(date)" >> healthcheck.cron
