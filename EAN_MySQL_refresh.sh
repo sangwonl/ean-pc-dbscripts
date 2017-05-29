@@ -51,7 +51,7 @@ FILES=(
 # AirportCoordinatesList
 # AliasRegionList
 # AreaAttractionsList
-# AttributeList
+AttributeList
 # ChainList
 # CityCoordinatesList
 # CountryList
@@ -61,7 +61,7 @@ HotelImageList
 # ParentRegionList
 # PointsOfInterestCoordinatesList
 # PolicyDescriptionList
-# PropertyAttributeLink
+PropertyAttributeLink
 # PropertyDescriptionList
 # PropertyTypeList
 # RecreationDescriptionList
@@ -94,11 +94,11 @@ ActivePropertyBusinessModel
 # ActivePropertyList_ko_KR
 # AliasRegionList_ko_KR
 # AreaAttractionsList_ko_KR
-# AttributeList_ko_KR
+AttributeList_ko_KR
 # CountryList_ko_KR
 # DiningDescriptionList_ko_KR
 # PolicyDescriptionList_ko_KR
-# PropertyAttributeLink_ko_KR
+PropertyAttributeLink_ko_KR
 # PropertyDescriptionList_ko_KR
 # PropertyTypeList_ko_KR
 # RecreationDescriptionList_ko_KR
