@@ -4,9 +4,9 @@
 ## BE CAREFUL AS IT WILL ERASE THE EXISTING DATABASE  ##
 ## YOU CAN USE SECTIONS OF IT TO RE-CREATE TABLES     ##
 ## WILL CREATE USER: eanuser / expedia                ##
-## table names are lowercase so it will work  in all  ## 
+## table names are lowercase so it will work  in all  ##
 ## platforms the same.                                ##
-@@ v4.0 -Change RegionID to BIGINT as                 ## 
+@@ v4.0 -Change RegionID to BIGINT as                 ##
 ## GAIA values are huge in size                       ##
 ########################################################
 ##
@@ -125,7 +125,7 @@ CREATE TABLE pointsofinterestcoordinateslist
 (
 	RegionID BIGINT NOT NULL,
 	RegionName VARCHAR(255),
-## as it will be the key need to be less than 767 bytes (767 / 4 = 191.75)  
+## as it will be the key need to be less than 767 bytes (767 / 4 = 191.75)
 	RegionNameLong VARCHAR(191),
 	Latitude numeric(9,6),
 	Longitude numeric(9,6),
@@ -300,7 +300,7 @@ CREATE INDEX idx_propertyattributelink_reverse ON propertyattributelink(Attribut
 
 
 ########### Image Data ####################
-## there are multiple images for an hotel 
+## there are multiple images for an hotel
 ## even with the same caption
 ## to make a unique index we need to use
 ## the URL instead
@@ -396,7 +396,8 @@ CREATE TABLE regioneanhotelidmapping
 	RegionID BIGINT NOT NULL,
 	EANHotelID INT NOT NULL,
   TimeStamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	PRIMARY KEY (RegionID, EANHotelID)
+	MappingID INT NOT NULL AUTO_INCREMENT,
+	PRIMARY KEY (MappingID)
 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 CREATE INDEX idx_hotelidmapping_reverse ON regioneanhotelidmapping(EANHotelID,RegionID);
 
@@ -498,15 +499,15 @@ CREATE TABLE propertyrenovationslist
 ## CALL sp_hotels_from_point(40.740984,-74.007500,5); ## meat-packing district
 ##
 ## Some Cities Coordinates (http://gael-varoquaux.info/blog/wp-content/uploads/2008/12/cities.txt)
-## Cape Town	-33.93	18.46	
-## Sao Paulo	-23.53	-46.63	
-## Moscow		55.75	37.62	
-## Seoul		37.56	126.99	
-## Tokyo		35.67	139.77	
-## Mexico City	19.43	-99.14	
-## New York		40.67	-73.94	
-## Las Vegas	36.21	-115.22	
-## Los Angeles	34.11	-118.41	
+## Cape Town	-33.93	18.46
+## Sao Paulo	-23.53	-46.63
+## Moscow		55.75	37.62
+## Seoul		37.56	126.99
+## Tokyo		35.67	139.77
+## Mexico City	19.43	-99.14
+## New York		40.67	-73.94
+## Las Vegas	36.21	-115.22
+## Los Angeles	34.11	-118.41
 ##
 ## Santiago Bernabeu Stadium 40.451585,-3.690375
 ##
@@ -518,16 +519,16 @@ BEGIN
 SELECT EanHotelID,Name,Address1,Address2,City,StateProvince,
 	   PostalCode,Country,StarRating,LowRate,HighRate,Latitude,Longitude,
 # this calculate the distance from the given longitude, latitude
-    sqrt( 
-        (POW(a.Latitude - lat, 2)* 68.1 * 68.1) + 
-        (POW(a.Longitude - lon, 2) * 53.1 * 53.1) 
+    sqrt(
+        (POW(a.Latitude - lat, 2)* 68.1 * 68.1) +
+        (POW(a.Longitude - lon, 2) * 53.1 * 53.1)
      ) AS distance
-FROM activepropertylist AS a 
+FROM activepropertylist AS a
 WHERE 1=1
 HAVING distance < maxdist
 ORDER BY distance ASC;
 # to use LIMIT you need to use a prepared statement to avoid errors
-END 
+END
 $$
 DELIMITER ;
 ##################################################################
@@ -540,15 +541,15 @@ DELIMITER $$
 CREATE PROCEDURE sp_hotels_from_point_restrict(IN lat double,lon double, maxdist int, country varchar(200), city varchar(200))
 BEGIN
 SET @s = CONCAT('SELECT EanHotelID,Name,Address1,Address2,City,StateProvince,PostalCode,Country,StarRating,LowRate,HighRate,Latitude,Longitude,',
-                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance', 
+                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance',
 				 ' FROM activepropertylist AS a ',
                 ' WHERE Country=\'',country,'\' AND City=\'',city,
                 '\' HAVING distance < ',maxdist,
                 ' ORDER BY distance ASC;');
-PREPARE stmt1 FROM @s; 
-EXECUTE stmt1; 
+PREPARE stmt1 FROM @s;
+EXECUTE stmt1;
 DEALLOCATE PREPARE stmt1;
-END 
+END
 $$
 DELIMITER ;
 
@@ -561,15 +562,15 @@ DELIMITER $$
 CREATE PROCEDURE sp_hotels_from_point_restrict_postal(IN lat double,lon double, maxdist int, postalcode varchar(60))
 BEGIN
 SET @s = CONCAT('SELECT EanHotelID,Name,Address1,Address2,City,StateProvince,PostalCode,Country,StarRating,LowRate,HighRate,Latitude,Longitude,',
-                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance', 
+                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance',
 				 ' FROM activepropertylist AS a ',
                 ' WHERE REPLACE(PostalCode," ","")=\'',postalcode,
                 '\' HAVING distance < ',maxdist,
                 ' ORDER BY distance ASC;');
-PREPARE stmt1 FROM @s; 
-EXECUTE stmt1; 
+PREPARE stmt1 FROM @s;
+EXECUTE stmt1;
 DEALLOCATE PREPARE stmt1;
-END 
+END
 $$
 DELIMITER ;
 
@@ -585,14 +586,14 @@ DELIMITER $$
 CREATE PROCEDURE sp_airport_from_point(IN lat double,lon double,countrycode VARCHAR(2),maxrec INT)
 BEGIN
 SET @s = CONCAT('SELECT AirportID,AirportCode,AirportName,CountryCode,Latitude,Longitude,',
-                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance', 
+                ' round( sqrt((POW(a.Latitude-',lat,',2)*68.1*68.1)+(POW(a.Longitude-',lon,',2)*53.1* 53.1))) AS distance',
 				 ' FROM airportcoordinateslist AS a ',
 				 ' WHERE CountryCode=','\'',countrycode,'\'',' AND AirportName NOT LIKE \'%Heliport%\' AND AirportName NOT LIKE \'%Train%\'',
                 ' ORDER BY distance ASC LIMIT ',maxrec,';');
-PREPARE stmt1 FROM @s; 
-EXECUTE stmt1; 
+PREPARE stmt1 FROM @s;
+EXECUTE stmt1;
 DEALLOCATE PREPARE stmt1;
-END 
+END
 $$
 DELIMITER ;
 
@@ -609,16 +610,16 @@ CREATE PROCEDURE sp_pois_from_point(IN lat double,lon double, maxdist int)
 BEGIN
 SELECT RegionNameLong,RegionName,
 # this calculate the distance from the given longitude, latitude
-    round( sqrt( 
-        (POW(a.Latitude - lat, 2)* 68.1 * 68.1) + 
-        (POW(a.Longitude - lon, 2) * 53.1 * 53.1) 
+    round( sqrt(
+        (POW(a.Latitude - lat, 2)* 68.1 * 68.1) +
+        (POW(a.Longitude - lon, 2) * 53.1 * 53.1)
      )) AS distance
-FROM pointsofinterestcoordinateslist AS a 
+FROM pointsofinterestcoordinateslist AS a
 WHERE 1=1
 HAVING distance < maxdist
 ORDER BY distance ASC;
 # to use LIMIT you need to use a prepared statement to avoid errors
-END 
+END
 $$
 DELIMITER ;
 
@@ -651,7 +652,7 @@ CREATE INDEX log_activeproperties ON log_activeproperty_changes(TimeStamp, EANHo
 ##################################################################
 ## STEP 1 - Save Old records
 ## must be called BEFORE refreshing activepropertylist
-## will create a copy of activepropertylist 
+## will create a copy of activepropertylist
 ## that we later use to analize what has changed
 ##################################################################
 DROP PROCEDURE IF EXISTS sp_log_createcopy;
@@ -661,7 +662,7 @@ BEGIN
 DROP TABLE IF EXISTS oldactivepropertylist;
 CREATE TABLE oldactivepropertylist LIKE eanprod.activepropertylist;
 INSERT oldactivepropertylist SELECT * FROM eanprod.activepropertylist;
-END 
+END
 $$
 DELIMITER ;
 
@@ -700,7 +701,7 @@ RIGHT JOIN activepropertylist AS NOW
 ON OLD.EANHotelID=NOW.EANHotelID
 WHERE OLD.EANHotelID IS NULL AND NOW.EANHotelID > @max_eanid;
 
-END 
+END
 $$
 DELIMITER ;
 
@@ -721,7 +722,7 @@ FROM oldactivepropertylist AS OLD
 LEFT JOIN activepropertylist AS NOW
 ON OLD.EANHotelID=NOW.EANHotelID
 WHERE NOW.EANHotelID IS NULL;
-END 
+END
 $$
 DELIMITER ;
 
@@ -782,7 +783,7 @@ BEGIN
   DECLARE oLocation VARCHAR(80);
   DECLARE oChainCodeID VARCHAR(5);
   DECLARE oCheckInTime,oCheckOutTime VARCHAR(10);
-  
+
   DECLARE nEANHotelID,nPropertyCategory INT;
   DECLARE nName VARCHAR(70);
   DECLARE nAddress1,nAddress2,nCity VARCHAR(50);
@@ -793,7 +794,7 @@ BEGIN
   DECLARE nLocation VARCHAR(80);
   DECLARE nChainCodeID VARCHAR(5);
   DECLARE nCheckInTime,nCheckOutTime VARCHAR(10);
-  
+
   DECLARE cur CURSOR FOR SELECT o.EANHotelID,o.Name,o.Address1,o.Address2,o.City,o.StateProvince,o.PostalCode,o.Country,
 		o.Latitude,o.Longitude,o.AirportCode,o.PropertyCategory,o.PropertyCurrency,
 		o.SupplierType,o.Location,o.ChainCodeID,o.CheckInTime,o.CheckOutTime,
@@ -815,11 +816,11 @@ BEGIN
       LEAVE read_loop;
     END IF;
     IF oName != nName THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew) 
+      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Name','VARCHAR(70)',oName,nName);
     END IF;
     IF oAddress1 != nAddress1 THEN
-      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew) 
+      INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Address1','VARCHAR(50)',oAddress1,nAddress1);
     END IF;
     IF oAddress2 != nAddress2 THEN
@@ -869,7 +870,7 @@ BEGIN
     IF oLocation != nLocation THEN
       INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'Location','VARCHAR(80)',oLocation,nLocation);
-    END IF; 
+    END IF;
     IF oChainCodeID != nChainCodeID THEN
       INSERT INTO eanprod.log_activeproperty_changes (EANHotelID,FieldName,FieldType,FieldValueOld,FieldValueNew)
       VALUES (nEANHotelID,'ChainCodeID','VARCHAR(5)',oChainCodeID,nChainCodeID);
@@ -931,6 +932,6 @@ BEGIN
     END WHILE;
   END IF;
   RETURN c;
-END 
+END
 $$
 DELIMITER ;
